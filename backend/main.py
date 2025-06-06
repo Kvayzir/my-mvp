@@ -11,7 +11,7 @@ app = FastAPI(title="Chat Backend", version="1.0.0")
 # Add CORS middleware to allow requests from your Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_origins=["*"],  # Next.js default port: http://localhost:3000
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
