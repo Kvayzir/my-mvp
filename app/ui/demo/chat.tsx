@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function Chat({title}: {title: string}) {
+export default function Chat({title, user_id}: {title: string, user_id: string}) {
     // State to store all chat messages
     const [messages, setMessages] = useState<{ id: number; user: "user" | "bot"; text: string; timestamp: string }[]>([]);
     
@@ -21,7 +21,7 @@ export default function Chat({title}: {title: string}) {
         <div className="max-w-2xl mx-auto p-4">
             <h2 className="text-xl font-semibold mb-4">{title}</h2>
             <Viewer messages={messages} />
-            <Input onSendMessage={addMessage} />
+            <Input onSendMessage={addMessage} user_id={user_id} />
         </div>
     );
 }
@@ -52,7 +52,7 @@ function Viewer({messages}: { messages: { id: number; user: "user" | "bot"; text
     );
 }
 
-function Input({onSendMessage}: { onSendMessage: (text: string, user: "user" | "bot") => void }) {
+function Input({onSendMessage, user_id}: { onSendMessage: (text: string, user: "user" | "bot") => void, user_id: string }) {
     // State for the current input value
     const [inputText, setInputText] = useState('');
 
@@ -63,14 +63,14 @@ function Input({onSendMessage}: { onSendMessage: (text: string, user: "user" | "
         
         try {
             // Send to backend
-            const response = await fetch('https://my-mvp-production-4b5f.up.railway.app/chat', { // http://localhost:8000/chat  
+            const response = await fetch('http://localhost:8000/chat', { //   https://my-mvp-production-4b5f.up.railway.app/chat
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     message: inputText,
-                    user_id: 'user123' // optional
+                    user_id: user_id // optional
                 })
             });
             
