@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function Chat({title, user_id}: {title: string, user_id: string}) {
+export default function Chat({title, user_id, topic}: {title: string, user_id: string, topic: string | null}) {
     // State to store all chat messages
     const [messages, setMessages] = useState<{ id: number; user: "user" | "bot"; text: string; timestamp: string }[]>([]);
+    const hasInitialized = useRef(false);
     
     // Function to add a new message
     const addMessage = (text: string, sender: "user" | "bot") => {
@@ -16,6 +17,35 @@ export default function Chat({title, user_id}: {title: string, user_id: string})
         };
         setMessages(prevMessages => [...prevMessages, newMessage]);
     };
+
+    useEffect(() => {
+        const initializeChat = async () => {
+            // Check and set flag in one operation
+            if (hasInitialized.current) return;
+            hasInitialized.current = true;
+            
+            try {
+                const response = await fetch('http://localhost:8000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `Start chat about ${topic}`,
+                        user_id: user_id
+                    })
+                });
+                
+                const data = await response.json();
+                addMessage(data.message, 'bot');
+            } catch (error) {
+                console.error('Error initializing chat:', error);
+                addMessage(`Welcome to the chat about ${topic}!`, 'bot');
+            }
+        };
+
+        initializeChat();
+    });
 
     return (
         <div className="max-w-2xl mx-auto p-4">
@@ -60,7 +90,7 @@ function Input({onSendMessage, user_id}: { onSendMessage: (text: string, user: "
     if (inputText.trim()) {
         // Add user message immediately
         onSendMessage(inputText, 'user');
-        
+        setInputText('');
         try {
             // Send to backend
             const response = await fetch('http://localhost:8000/chat', { //   https://my-mvp-production-4b5f.up.railway.app/chat
@@ -83,8 +113,6 @@ function Input({onSendMessage, user_id}: { onSendMessage: (text: string, user: "
             console.error('Error:', error);
             onSendMessage('Sorry, I had trouble responding. Please try again.', 'bot');
         }
-        
-        setInputText('');
     }
 };
 

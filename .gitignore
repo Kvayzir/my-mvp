@@ -83,3 +83,4 @@ backend/htmlcov/
 
 # Python logs
 backend/*.log
+backend/*.db

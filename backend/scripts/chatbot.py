@@ -3,6 +3,7 @@ Chatbot module handling AI response generation using Llama via Hugging Face API.
 """
 import os
 import requests
+import time
 from typing import List, Dict, Any
 
 class ChatBot:
@@ -12,24 +13,36 @@ class ChatBot:
         """Initialize the chatbot with API configuration."""
         self.hf_api_url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct"
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
+        self.chat_history: List[Dict[str, Any]] = []
         self.default_max_tokens = 150
-        self.system_prompt = "You are a helpful and friendly AI assistant. Please provide helpful, accurate, and engaging responses."
-    
-    def generate_response(self, message: str, user_id: str, chat_history: List[Dict[str, Any]]) -> str:
+        self.system_prompt = "Eres una IA diseñada para ayudar a estudiantes de secundaria a aprender e incentivar su curiosidad."
+
+    def generate_response(self, message: str, user_id: str, user_entry: dict) -> str:
         """
         Generate a response to the user's message.
         
         Args:
             message: The user's message
             user_id: Unique identifier for the user
-            chat_history: Full chat history for context
             
         Returns:
             Generated response string
         """
+        self.chat_history.append(user_entry)
+        bot_response = self._generate_response(message)
+        # Store bot response in history
+        bot_entry = {
+            "type": "bot",
+            "message": bot_response,
+            "timestamp": time.time()
+        }
+        self.chat_history.append(bot_entry)
+        return bot_response
+        
+    def _generate_response(self, message: str) -> str:
         if self.hf_token:
             try:
-                return self._generate_llama_response(message, chat_history)
+                return self._generate_llama_response(message, self.chat_history)
             except Exception as e:
                 print(f"Error with Llama API: {e}")
                 return self._generate_fallback_response(message)
@@ -53,13 +66,13 @@ class ChatBot:
         # Get recent conversation context
         recent_messages = self._get_conversation_context(chat_history)
         
-        # Add current user message
-        recent_messages.append({"role": "user", "content": message})
-        
         # Add system prompt if it's the first message
         if len(recent_messages) == 1:
-            system_message = {"role": "user", "content": self.system_prompt}
+            system_message = {"role": "system", "content": self.system_prompt}
             recent_messages.insert(0, system_message)
+
+        print(f"Querying Llama API with {len(recent_messages)} messages")
+        print(f"Recent messages: {recent_messages}")
         
         # Query Llama API
         response = self._query_llama_api(recent_messages)
@@ -232,6 +245,43 @@ class ChatBot:
         
         return "That's interesting! I'm currently having trouble with my main AI system, but I'm still here to chat with you."
     
+    def get_stats(self) -> Dict[str, Any]:
+        """
+        Get basic statistics about the chatbot.
+        
+        Returns:
+            Dictionary containing chat statistics
+        """
+        user_messages = len([msg for msg in self.chat_history if msg["type"] == "user"])
+        bot_messages = len([msg for msg in self.chat_history if msg["type"] == "bot"])
+        unique_users = len(set(msg.get("user_id", "anonymous") for msg in self.chat_history if msg["type"] == "user"))
+        
+        return {
+            "total_messages": len(self.chat_history),
+            "user_messages": user_messages,
+            "bot_messages": bot_messages,
+            "unique_users": unique_users,
+            "llama_api_configured": self.hf_token is not None
+        }
+    
+    def get_chat_history(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """
+        Get recent chat history.
+        
+        Args:
+            limit: Maximum number of messages to return
+            
+        Returns:
+            List of chat history entries
+        """
+        return self.chat_history[-limit:]
+    
+    def clear_chat_history(self) -> None:
+        """
+        Clear the chat history.
+        """
+        self.chat_history = []
+
     def update_system_prompt(self, new_prompt: str) -> None:
         """
         Update the system prompt for the chatbot.

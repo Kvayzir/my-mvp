@@ -23,3 +23,12 @@
 
 Server will run at: http://localhost:8000
 API docs at: http://localhost:8000/docs
+
+## ToDo's
+- Crear chatbots en base a temas
+   - Guardar temas en DB
+   - Cargar temas en frontend
+   - Crear chatbots en base al tema que se envía del frontend
+- Mandar mensaje inicial
+- Función para cargar la conversación
+- Organizar base de datos
