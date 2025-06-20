@@ -33,7 +33,7 @@ class ChatBot:
     def _generate_response(self, context: List[Dict[str, str]]) -> str:
         if self.dummy:
             # Dummy response for testing
-            return f"This is a dummy response. The AI prompt is: \n{context[0]['system_prompt']}\n"
+            return f"This is a dummy response. The AI prompt is: \n{context[0]['content']}\n"
         if self.hf_token:
             try:
                 return self._generate_llama_response(context)

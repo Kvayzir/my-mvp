@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
-from utils.messages import SimpleChatMessage
+from utils.messages import SimpleChatMessage, ChatMessage
 
 
 class Conversation:
@@ -61,7 +61,7 @@ class ChatMemoryManager:
     
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
         """Get or create conversation with database fallback"""
-        
+        print(f"Fetching conversation for user {user_id} with theme '{theme}'")
         # Check if already in memory
         if (user_id, theme) in self.active_conversations:
             conversation = self.active_conversations[(user_id, theme)]
@@ -69,7 +69,7 @@ class ChatMemoryManager:
             return conversation
         
         # Load from database
-        recent_messages = await self.database.get_chat_history(user_id, theme, limit=20)
+        recent_messages = self.database.get_chat_history(user_id, theme, limit=20)
         print(f"Loaded {len(recent_messages)} messages from database for user {user_id} and theme {theme}")
         conversation = Conversation(user_id, recent_messages)
         
@@ -77,15 +77,23 @@ class ChatMemoryManager:
         await self._add_to_memory(user_id, theme, conversation)
         return conversation
     
-    async def save_and_cache_message(self, user_id: str, content: str, sender: str):
+    async def save_and_cache_message(self, msg: ChatMessage, response: str, response_time_ms: int):
         """Save message to database and update memory cache"""
         
         # Save to database first (WIP)
-        await self.database.save_chat_message(user_id, content, sender, 500)
+        message = {
+            "user_id": msg.user_id or "anonymous",
+            "theme": msg.theme or "default",
+            "message": msg.message,
+            "response": response,
+            "response_time_ms": response_time_ms,
+        }
+        await self.database.save_chat_message(message)
         
         # Update memory cache
-        conversation = await self.get_conversation(user_id)
-        conversation.add_message(content, sender)
+        conversation = await self.get_conversation(msg.user_id, msg.theme)
+        conversation.add_message(msg.message, "user")
+        conversation.add_message(response, "bot")
     
     async def _add_to_memory(self, user_id: str, theme: str, conversation: Conversation):
         """Add conversation to memory with cleanup"""

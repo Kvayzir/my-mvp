@@ -78,18 +78,16 @@ class ChatServer:
             Generated response string
         """
         start_time = time.time()
-        # Save user message
-        await self.memory_manager.save_and_cache_message(message.user_id, message, "user")
         
         # Get conversation context from memory
         conversation = await self.memory_manager.get_conversation(message.user_id, message.theme)
         context = conversation.get_context()
         print(f"Context for user {message.user_id} and theme {message.theme}: {context}")
         # Generate response (your AI logic here)
-        response = await self.chatBot.generate_response(context)
+        response = self.chatBot.generate_response(context)
         
-        # Save bot response
-        await self.memory_manager.save_and_cache_message(message.user_id, response, "bot")
+        # Save message 
+        await self.memory_manager.save_and_cache_message(message, response, time.time() - start_time)
         
         return response
         

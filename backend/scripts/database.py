@@ -109,31 +109,31 @@ class DatabaseManager:
         finally:
             db.close()
     
-    def save_chat_message(self, user_id: str, message: str, response: str, response_time_ms: int):
+    async def save_chat_message(self, msg: dict):
         """Save a chat message to the database"""
         db = SessionLocal()
         try:
-            # Save chat message
-            chat_msg = ChatMessage(
-                user_id=user_id,
-                theme="default",  # Default theme, can be changed later
-                message=message,
-                response=response,
-                response_time_ms=response_time_ms
+            message = ChatMessage(
+                user_id=msg.get("user_id", "anonymous"),
+                theme=msg.get("theme", "default"),
+                message=msg["message"],
+                response=msg.get("response", ""),
+                response_time_ms=msg.get("response_time_ms", 0),
+                timestamp=datetime.utcnow()
             )
-            print(f"Saving chat message: {chat_msg}")
-            db.add(chat_msg)
+            print(f"Saving chat message: {message}")
+            db.add(message)
             
             # Update or create user
-            user = db.query(User).filter(User.user_id == user_id).first()
+            user = db.query(User).filter(User.user_id == message.user_id).first()
             if user:
                 user.last_seen = datetime.utcnow()
                 user.message_count += 1
             else:
-                user = User(user_id=user_id, message_count=1)
+                user = User(user_id=message.user_id, message_count=1)
                 db.add(user)
             db.commit()
-            return chat_msg.id
+            return True
         except Exception as e:
             db.rollback()
             raise e
