@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
+from utils.messages import SimpleChatMessage
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./chat_app.db")
@@ -21,11 +22,20 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Database Models
+class LearningJourney(Base):
+    __tablename__ = "learning_journeys"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    theme = Column(String, unique=True, index=True)
+    objectives = Column(String, default="")
+    prompt = Column(String, default="")
+
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String, index=True)
+    theme = Column(String, default="default")
     message = Column(String)
     response = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
@@ -57,6 +67,32 @@ class DatabaseManager:
     def __init__(self):
         create_tables()
 
+    def register_theme(self, theme_name: str, objectives: str = "", prompt: str = ""):
+        """Register a new theme in the database"""
+        db = SessionLocal()
+        try:
+            # Check if theme already exists
+            existing_theme = db.query(LearningJourney).filter(LearningJourney.theme == theme_name).first()
+            if not existing_theme:
+                new_theme = LearningJourney(theme=theme_name, objectives=objectives, prompt=prompt)
+                db.add(new_theme)
+                db.commit()
+            return existing_theme or new_theme
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            db.close()
+
+    def get_topics(self):
+        """Get all registered themes from the database"""
+        db = SessionLocal()
+        try:
+            themes = db.query(LearningJourney).all()
+            return [theme.theme for theme in themes]
+        finally:
+            db.close()
+
     def register_user(self, user_id: str):
         """Register a new user in the database"""
         db = SessionLocal()
@@ -80,10 +116,12 @@ class DatabaseManager:
             # Save chat message
             chat_msg = ChatMessage(
                 user_id=user_id,
+                theme="default",  # Default theme, can be changed later
                 message=message,
                 response=response,
                 response_time_ms=response_time_ms
             )
+            print(f"Saving chat message: {chat_msg}")
             db.add(chat_msg)
             
             # Update or create user
@@ -94,7 +132,6 @@ class DatabaseManager:
             else:
                 user = User(user_id=user_id, message_count=1)
                 db.add(user)
-            
             db.commit()
             return chat_msg.id
         except Exception as e:
@@ -103,36 +140,48 @@ class DatabaseManager:
         finally:
             db.close()
     
-    def get_chat_history(self, limit: int = 50, user_id: str = None):
+    def get_learning_journey_prompt(self, theme_name: str):
+        """Get the prompt for a specific learning journey theme"""
+        db = SessionLocal()
+        try:
+            theme = db.query(LearningJourney).filter(LearningJourney.theme == theme_name).first()
+            if not theme:
+                return ""
+            return theme.prompt
+        finally:
+            db.close()
+
+    def get_chat_history(self, user_id: str, theme: str, limit: int = 50):
         """Get chat history from database"""
         db = SessionLocal()
         try:
             query = db.query(ChatMessage)
-            if user_id:
-                query = query.filter(ChatMessage.user_id == user_id)
+            query = query.filter(ChatMessage.user_id == user_id, ChatMessage.theme == theme)
+
+            if not query.count():
+                return [SimpleChatMessage(content=self.get_learning_journey_prompt(theme), sender="system", timestamp=datetime.utcnow().timestamp())]
             
             messages = query.order_by(ChatMessage.timestamp.desc()).limit(limit).all()
-            return [
-                {
-                    "id": msg.id,
-                    "type": "user",
-                    "message": msg.message,
-                    "user_id": msg.user_id,
-                    "timestamp": msg.timestamp.timestamp()
-                }
-                for msg in reversed(messages)  # Reverse to get chronological order
-            ] + [
-                {
-                    "id": msg.id,
-                    "type": "bot",
-                    "message": msg.response,
-                    "timestamp": msg.timestamp.timestamp()
-                }
-                for msg in reversed(messages)
-            ]
+            return self._format_chat_history(messages)
         finally:
             db.close()
     
+    def _format_chat_history(self, messages):
+        """Format chat messages into a list of dictionaries"""
+        formatted = []
+        for msg in reversed(messages):
+            formatted.append(SimpleChatMessage(
+                content=msg.message, 
+                sender="user", 
+                timestamp=msg.timestamp.timestamp()
+            ))
+            formatted.append(SimpleChatMessage(
+                content=msg.response, 
+                sender="bot", 
+                timestamp=msg.timestamp.timestamp()
+            ))
+        return formatted
+
     def get_user_stats(self, user_id: str):
         """Get statistics for a specific user"""
         db = SessionLocal()

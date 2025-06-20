@@ -5,14 +5,9 @@ import time
 import os
 from typing import List, Dict, Any
 from scripts.chatbot import ChatBot
-from pydantic import BaseModel
+from utils.messages import UserRegistration, TopicMessage, ChatMessage, ChatResponse
 from .database import DatabaseManager
-
-class TopicMessage(BaseModel):
-    topicSubject: str
-    topicName: str
-    topicInstructions: str
-    topicContent: str
+from .chatManager import ChatMemoryManager
 
 class ChatServer:
     """Manages chat sessions, history, and server operations."""
@@ -20,12 +15,13 @@ class ChatServer:
     def __init__(self, use_database: bool = True):
         """Initialize the chat server with empty history."""
         self.use_database = use_database
-        self.chatbotsDict = {}
         self.topics = []
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
+        self.chatBot = ChatBot()
 
         if self.use_database:
             self.db_manager = DatabaseManager()
+            self.memory_manager = ChatMemoryManager(self.db_manager)
             print("✅ Database initialized successfully")
         else:
             print("⚠️ Using in-memory storage (data will be lost on restart)")
@@ -41,19 +37,12 @@ class ChatServer:
             raise ValueError("User ID cannot be empty")
         
         if self.use_database:
-            # Register user in the database
             try:
-                self.db_manager.save_chat_message(user_id=user_id, message="", response="", response_time_ms=0)
+                self.db_manager.register_user(user_id=user_id)
                 print(f"User '{user_id}' registered successfully in the database")
             except Exception as e:
                 print(f"❌ Database registration failed: {e}")
                 return
-            
-        if user_id not in self.chatbotsDict:
-            self.chatbotsDict[user_id] = ChatBot()
-            print(f"User '{user_id}' registered successfully")
-        else:
-            print(f"User '{user_id}' already exists")
         
     def create_topic(self, topic: TopicMessage) -> None:
         """
@@ -63,9 +52,20 @@ class ChatServer:
             topic_name: Name of the topic to create
         """
         self.topics.append(topic)
+        self.db_manager.register_theme(
+            theme_name=topic.topicName,
+            objectives=topic.topicInstructions,
+            prompt=topic.topicContent
+        )
         print(f"Topic '{topic.topicName}' created (not implemented in this example).")
-    
-    def process_message(self, message: str, user_id: str) -> str:
+
+    def get_topics(self) -> TopicMessage:
+        """
+        Retrieve all topics available in the chat system.
+        """
+        return self.db_manager.get_topics()
+
+    async def process_message(self, message: ChatMessage) -> str:
         """
         Process a user message and generate a response.
         
@@ -78,16 +78,32 @@ class ChatServer:
             Generated response string
         """
         start_time = time.time()
+        # Save user message
+        await self.memory_manager.save_and_cache_message(message.user_id, message, "user")
+        
+        # Get conversation context from memory
+        conversation = await self.memory_manager.get_conversation(message.user_id, message.theme)
+        context = conversation.get_context()
+        print(f"Context for user {message.user_id} and theme {message.theme}: {context}")
+        # Generate response (your AI logic here)
+        response = await self.chatBot.generate_response(context)
+        
+        # Save bot response
+        await self.memory_manager.save_and_cache_message(message.user_id, response, "bot")
+        
+        return response
+        
         # Store user message in history
         user_entry = {
             "type": "user",
-            "message": message,
-            "user_id": user_id,
+            "message": message.message,
+            "user_id": message.user_id,
             "timestamp": start_time
         }
         
         # Generate response using chatbot
-        self.chatbotsDict[user_id] = self.chatbotsDict.get(user_id, ChatBot())
+        
+        self.chatbotsDict[(message.user_id, message.theme)] = self.chatbotsDict.get(user_id, ChatBot())
         bot_response = self.chatbotsDict[user_id].generate_response(message, user_id, user_entry)
         
         # Calculate response time

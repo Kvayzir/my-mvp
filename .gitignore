@@ -80,6 +80,8 @@ backend/*.swo
 backend/.pytest_cache/
 backend/.coverage
 backend/htmlcov/
+backend/scripts/__pycache__
+backend/utils/__pycache__
 
 # Python logs
 backend/*.log

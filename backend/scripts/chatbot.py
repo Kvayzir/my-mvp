@@ -9,15 +9,15 @@ from typing import List, Dict, Any
 class ChatBot:
     """Handles AI response generation and fallback responses."""
     
-    def __init__(self):
+    def __init__(self, dummy=True):
         """Initialize the chatbot with API configuration."""
+        self.dummy = dummy
         self.hf_api_url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct"
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
-        self.chat_history: List[Dict[str, Any]] = []
         self.default_max_tokens = 150
-        self.system_prompt = "Eres una IA diseñada para ayudar a estudiantes de secundaria a aprender e incentivar su curiosidad."
+        
 
-    def generate_response(self, message: str, user_id: str, user_entry: dict) -> str:
+    def generate_response(self, context: List[Dict[str, str]]) -> str:
         """
         Generate a response to the user's message.
         
@@ -28,28 +28,22 @@ class ChatBot:
         Returns:
             Generated response string
         """
-        self.chat_history.append(user_entry)
-        bot_response = self._generate_response(message)
-        # Store bot response in history
-        bot_entry = {
-            "type": "bot",
-            "message": bot_response,
-            "timestamp": time.time()
-        }
-        self.chat_history.append(bot_entry)
-        return bot_response
+        return self._generate_response(context)
         
-    def _generate_response(self, message: str) -> str:
+    def _generate_response(self, context: List[Dict[str, str]]) -> str:
+        if self.dummy:
+            # Dummy response for testing
+            return f"This is a dummy response. The AI prompt is: \n{context[0]['system_prompt']}\n"
         if self.hf_token:
             try:
-                return self._generate_llama_response(message, self.chat_history)
+                return self._generate_llama_response(context)
             except Exception as e:
                 print(f"Error with Llama API: {e}")
-                return self._generate_fallback_response(message)
+                return self._generate_fallback_response(context[-1]["message"])
         else:
-            return self._generate_fallback_response(message)
+            return self._generate_fallback_response(context[-1]["message"])
     
-    def _generate_llama_response(self, message: str, chat_history: List[Dict[str, Any]]) -> str:
+    def _generate_llama_response(self, context: List[Dict[str, Any]]) -> str:
         """
         Generate response using Llama via Hugging Face API.
         
@@ -63,19 +57,11 @@ class ChatBot:
         Raises:
             Exception: If API call fails or response is invalid
         """
-        # Get recent conversation context
-        recent_messages = self._get_conversation_context(chat_history)
-        
-        # Add system prompt if it's the first message
-        if len(recent_messages) == 1:
-            system_message = {"role": "system", "content": self.system_prompt}
-            recent_messages.insert(0, system_message)
-
-        print(f"Querying Llama API with {len(recent_messages)} messages")
-        print(f"Recent messages: {recent_messages}")
+        print(f"Querying Llama API with {len(context)} messages")
+        print(f"Recent messages: {context}")
         
         # Query Llama API
-        response = self._query_llama_api(recent_messages)
+        response = self._query_llama_api(context)
         return response
     
     def _query_llama_api(self, messages: List[Dict[str, str]], max_tokens: int = None) -> str:

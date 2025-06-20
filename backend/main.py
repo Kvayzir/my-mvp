@@ -1,36 +1,22 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import time
-from typing import List, Optional
 from dotenv import load_dotenv
 from scripts.server import ChatServer
+from utils.messages import (
+    UserRegistration,
+    ChatMessage,
+    ChatResponse,
+    TopicMessage
+)
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Pydantic models for request/response
-class UserRegistration(BaseModel):
-    user_id: str
-    classroom: Optional[str] = "null"
-
-class ChatMessage(BaseModel):
-    message: str
-    user_id: Optional[str] = "anonymous"
-
-class ChatResponse(BaseModel):
-    response: str
-    timestamp: float
-    response_time_ms: int
-
-class TopicMessage(BaseModel):
-    topicSubject: str
-    topicName: str
-    topicInstructions: str
-    topicContent: str
-
 # Initialize components
-chat_server = ChatServer()
+def get_chat_server():
+    """Dependency to get the chat server instance"""
+    return ChatServer()
 
 # Create FastAPI app
 app = FastAPI(title="Chat Backend with Llama", version="1.0.0")
@@ -45,12 +31,15 @@ app.add_middleware(
 )
 
 @app.get("/")
-async def root():
+async def root(chat_server: ChatServer = Depends(get_chat_server)):
     """Health check endpoint"""
     return chat_server.get_health_status()
 
 @app.post("/user/register")
-async def register_user(user: UserRegistration):
+async def register_user(
+    user: UserRegistration, 
+    chat_server: ChatServer = Depends(get_chat_server)
+):
     """Register a new user"""
     print(f"Registering user: {user.user_id}")
     if not user.user_id.strip():
@@ -60,7 +49,10 @@ async def register_user(user: UserRegistration):
     return {"message": f"User '{user.user_id}' registered successfully"}
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(chat_message: ChatMessage):
+async def chat_endpoint(
+    chat_message: ChatMessage,
+    chat_server: ChatServer = Depends(get_chat_server)
+):
     """Main chat endpoint with Llama AI response"""
     start_time = time.time()
     
@@ -70,13 +62,11 @@ async def chat_endpoint(chat_message: ChatMessage):
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
         # Process message through chat server
-        bot_response = chat_server.process_message(
-            message=chat_message.message,
-            user_id=chat_message.user_id,
-        )
+        bot_response = await chat_server.process_message(chat_message)
         
         # Calculate response time
         response_time = int((time.time() - start_time) * 1000)
+        print(f"Bot response: {bot_response}")
         
         return ChatResponse(
             response=bot_response,
@@ -87,9 +77,11 @@ async def chat_endpoint(chat_message: ChatMessage):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
 
-@app.post("/create_topic")
-async def topic_endpoint(topic_message: TopicMessage):
-    """Create a new topic for the chatbot"""
+@app.post("/topics")
+async def topic_endpoint(
+    topic_message: TopicMessage,
+    chat_server: ChatServer = Depends(get_chat_server)
+):
     try:
         # Validate input
         if not topic_message.topicName.strip():
@@ -103,24 +95,28 @@ async def topic_endpoint(topic_message: TopicMessage):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating topic: {str(e)}")
 
-@app.get("/chat/topics")
-async def get_topics():
-    """Get list of available topics"""
-    return ["topic1", "topic2", "topic3"]
+@app.get("/topics/overview")
+async def get_topics(
+    chat_server: ChatServer = Depends(get_chat_server)
+):
+    return chat_server.get_topics()
 
 @app.get("/chat/history")
-async def get_chat_history():
-    """Get recent chat history"""
+async def get_chat_history(
+    chat_server: ChatServer = Depends(get_chat_server)
+):
     return chat_server.get_chat_history()
 
 @app.delete("/chat/history")
-async def clear_chat_history():
-    """Clear chat history"""
+async def clear_chat_history(
+    chat_server: ChatServer = Depends(get_chat_server)
+):
     return chat_server.clear_chat_history()
 
 @app.get("/chat/stats")
-async def get_chat_stats():
-    """Get basic chat statistics"""
+async def get_chat_stats(
+    chat_server: ChatServer = Depends(get_chat_server)
+):
     return chat_server.get_chat_stats()
 
 if __name__ == "__main__":
