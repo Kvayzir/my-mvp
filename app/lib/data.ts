@@ -3,7 +3,7 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const topics = await fetch('http://localhost:8000/chat/topics', {
+    const topics = await fetch('http://localhost:8000/topics/overview', {
         method: 'GET',
         headers: { 
             'Content-Type': 'application/json',

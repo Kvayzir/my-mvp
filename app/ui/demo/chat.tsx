@@ -37,7 +37,8 @@ export default function Chat({title, user_id, topic}: {title: string, user_id: s
                 });
                 
                 const data = await response.json();
-                addMessage(data.message, 'bot');
+                addMessage(data.response, 'bot');
+                console.log('Chat initialized:', data);
             } catch (error) {
                 console.error('Error initializing chat:', error);
                 addMessage(`Welcome to the chat about ${topic}!`, 'bot');

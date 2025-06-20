@@ -4,10 +4,10 @@ import $ from 'jquery';
 
 export default function Page() {
   const fields = [
-    { id: "topicSubject", label: "Curso", placeholder: "Curso" },
-    { id: "topicName", label: "Tema", placeholder: "Escribe el nombre del tema" },
-    { id: "topicInstructions", label: "Objetivos", placeholder: "Escribe los objetivos" },
-    { id: "topicContent", label: "Contenido a tratar", placeholder: "Escribe el contenido" }
+    { id: "subject", label: "Curso", placeholder: "Curso" },
+    { id: "name", label: "Tema", placeholder: "Escribe el nombre del tema" },
+    { id: "instructions", label: "Objetivos", placeholder: "Escribe los objetivos" },
+    { id: "content", label: "Contenido a tratar", placeholder: "Escribe el contenido" }
   ]
 
   const handle_create_topic = () => {
@@ -17,7 +17,7 @@ export default function Page() {
     // Here you would typically send the data to your backend API
     console.log("Creating topic:", topic);
     $.ajax({
-      url: 'http://localhost:8000/create_topic', // Replace with your backend endpoint
+      url: 'http://localhost:8000/topics/create', // Replace with your backend endpoint
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(topic),
