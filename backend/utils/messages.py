@@ -24,10 +24,10 @@ class ChatResponse(BaseModel):
     response_time_ms: int
 
 class TopicMessage(BaseModel):
-    topicSubject: str
-    topicName: str
-    topicInstructions: str
-    topicContent: str
+    subject: str
+    name: str
+    instructions: str
+    content: str
 
 # Additional models you might need in the future
 class HealthStatus(BaseModel):

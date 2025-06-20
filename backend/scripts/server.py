@@ -53,11 +53,11 @@ class ChatServer:
         """
         self.topics.append(topic)
         self.db_manager.register_theme(
-            theme_name=topic.topicName,
-            objectives=topic.topicInstructions,
-            prompt=topic.topicContent
+            theme_name=topic.name,
+            objectives=topic.instructions,
+            prompt=topic.content
         )
-        print(f"Topic '{topic.topicName}' created (not implemented in this example).")
+        print(f"Topic '{topic.name}' created (not implemented in this example).")
 
     def get_topics(self) -> TopicMessage:
         """
@@ -130,7 +130,7 @@ class ChatServer:
             print(f"❌ Failed to get history from database: {e}")
             return []
 
-    def get_chat_history(self, limit: int = 50, user_id: str = None) -> Dict[str, Any]:
+    def get_chat_history(self, user_id: str, theme: str, limit: int = 50) -> Dict[str, Any]:
         """
         Get recent chat history.
         
@@ -142,7 +142,7 @@ class ChatServer:
         """
         if self.use_database:
             try:
-                history = self.db_manager.get_chat_history(limit=limit, user_id=user_id)
+                history = self.db_manager.get_chat_history(user_id=user_id, theme=theme, limit=limit)
                 return {
                     "history": history,
                     "total_messages": len(history),

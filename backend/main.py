@@ -77,20 +77,20 @@ async def chat_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
 
-@app.post("/topics")
+@app.post("/topics/create")
 async def topic_endpoint(
     topic_message: TopicMessage,
     chat_server: ChatServer = Depends(get_chat_server)
 ):
     try:
         # Validate input
-        if not topic_message.topicName.strip():
+        if not topic_message.name.strip():
             raise HTTPException(status_code=400, detail="Topic name cannot be empty")
         
         # Create topic in chat server
         print(f"Creating topic: {topic_message}")
         chat_server.create_topic(topic_message)
-        return {"message": f"Topic '{topic_message.topicName}' created successfully"}
+        return {"message": f"Topic '{topic_message.name}' created successfully"}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating topic: {str(e)}")
@@ -101,11 +101,13 @@ async def get_topics(
 ):
     return chat_server.get_topics()
 
-@app.get("/chat/history")
+@app.get("/chat/{user_id}/{theme}/history")
 async def get_chat_history(
+    user_id: str,
+    theme: str,
     chat_server: ChatServer = Depends(get_chat_server)
 ):
-    return chat_server.get_chat_history()
+    return chat_server.get_chat_history(user_id, theme)
 
 @app.delete("/chat/history")
 async def clear_chat_history(
