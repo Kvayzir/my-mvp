@@ -9,12 +9,12 @@ from typing import List, Dict, Any
 class ChatBot:
     """Handles AI response generation and fallback responses."""
     
-    def __init__(self, dummy=True):
+    def __init__(self, dummy=False):
         """Initialize the chatbot with API configuration."""
         self.dummy = dummy
         self.hf_api_url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct"
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
-        self.default_max_tokens = 150
+        self.default_max_tokens = 200
         
 
     def generate_response(self, context: List[Dict[str, str]]) -> str:
@@ -33,6 +33,7 @@ class ChatBot:
     def _generate_response(self, context: List[Dict[str, str]]) -> str:
         if self.dummy:
             # Dummy response for testing
+            print(f"Generating response for context: {context}")
             return f"This is a dummy response. The AI prompt is: \n{context[0]['content']}\n"
         if self.hf_token:
             try:
@@ -107,7 +108,7 @@ class ChatBot:
                 self.hf_api_url, 
                 headers=headers, 
                 json=payload, 
-                timeout=30
+                timeout=80
             )
             response.raise_for_status()
             

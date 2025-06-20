@@ -159,16 +159,22 @@ class DatabaseManager:
             query = query.filter(ChatMessage.user_id == user_id, ChatMessage.theme == theme)
 
             if not query.count():
+                print(f"No chat history found for user {user_id} with theme {theme}. Returning learning journey prompt.")
                 return [SimpleChatMessage(content=self.get_learning_journey_prompt(theme), sender="system", timestamp=datetime.utcnow().timestamp())]
             
             messages = query.order_by(ChatMessage.timestamp.desc()).limit(limit).all()
-            return self._format_chat_history(messages)
+            return self._format_chat_history(messages, theme)
         finally:
             db.close()
     
-    def _format_chat_history(self, messages):
+    def _format_chat_history(self, messages, theme: str):
         """Format chat messages into a list of dictionaries"""
         formatted = []
+        formatted.append(SimpleChatMessage(
+            content=self.get_learning_journey_prompt(theme), 
+            sender="system", 
+            timestamp=""
+        ))
         for msg in reversed(messages):
             formatted.append(SimpleChatMessage(
                 content=msg.message, 

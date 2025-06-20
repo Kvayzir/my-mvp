@@ -1,11 +1,14 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
-export default function Chat({title, user_id, topic}: {title: string, user_id: string, topic: string | null}) {
+export default function Chat({title, user_id}: {title: string, user_id: string}) {
     // State to store all chat messages
     const [messages, setMessages] = useState<{ id: number; user: "user" | "bot"; text: string; timestamp: string }[]>([]);
     const hasInitialized = useRef(false);
+    const searchParams = useSearchParams();
+    const topic = searchParams.get('topic');
     
     // Function to add a new message
     const addMessage = (text: string, sender: "user" | "bot") => {
@@ -31,8 +34,9 @@ export default function Chat({title, user_id, topic}: {title: string, user_id: s
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        message: `Start chat about ${topic}`,
-                        user_id: user_id
+                        message: `Eres un assistente de profesor de secundaria cuyo objetivo es ayudar a los alummnos a aprender. Para ello, deberás motivarlos a que se interesen en el tema, y dejarles una pregunta al final de cada mensaje tuyo. Por ejemplo, en vez de terminar dicendo "La importancia de la investigación es ...", pregunta "¿Cuáles crees que son los beneficios de la investigación?". Sé breve, sintetiza tu respuesta en 40 palabras o menos, usa tres oraciones por respuesta: la primera para contextualizar, la segunda para motivar, y la tercera para preguntar. En esta oportunidad, introduce el tema de ${topic || 'Introducción a la investigación'}.`,
+                        user_id: user_id,
+                        theme: topic || 'default' // Default to 'general' if no topic
                     })
                 });
                 
@@ -86,6 +90,8 @@ function Viewer({messages}: { messages: { id: number; user: "user" | "bot"; text
 function Input({onSendMessage, user_id}: { onSendMessage: (text: string, user: "user" | "bot") => void, user_id: string }) {
     // State for the current input value
     const [inputText, setInputText] = useState('');
+    const searchParams = useSearchParams();
+    const topic = searchParams.get('topic');
 
     const handleSend = async () => {
     if (inputText.trim()) {
@@ -101,7 +107,8 @@ function Input({onSendMessage, user_id}: { onSendMessage: (text: string, user: "
                 },
                 body: JSON.stringify({
                     message: inputText,
-                    user_id: user_id // optional
+                    user_id: user_id,
+                    theme: topic || 'default'
                 })
             });
             

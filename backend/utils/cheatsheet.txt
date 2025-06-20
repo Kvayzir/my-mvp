@@ -1,0 +1,6 @@
+curl -X POST "http://localhost:8000/user/register"      -H "Content-Type: application/json"      -d '{"user_id":"Jun","classroom":"4B"}'
+curl -X POST "http://localhost:8000/chat"      -H "Content-Type: application/json"      -d '{"message":"Hi","user_id":"Jun","theme":"user123"}'
+curl -X POST "http://localhost:8000/topics/create"      -H "Content-Type: application/json"      -d '{"subject":"History","name":"Industrial revolution","instructions":"Discuss the impact of the Industrial Revolution on modern society.","content":"Great Britain"}'
+
+curl -X GET "http://localhost:8000/topics/overview"
+curl -X GET "http://localhost:8000/chat/Jun/user123/history"

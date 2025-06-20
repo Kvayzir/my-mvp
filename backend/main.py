@@ -66,7 +66,6 @@ async def chat_endpoint(
         
         # Calculate response time
         response_time = int((time.time() - start_time) * 1000)
-        print(f"Bot response: {bot_response}")
         
         return ChatResponse(
             response=bot_response,

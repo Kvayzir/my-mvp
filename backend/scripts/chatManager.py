@@ -61,7 +61,6 @@ class ChatMemoryManager:
     
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
         """Get or create conversation with database fallback"""
-        print(f"Fetching conversation for user {user_id} with theme '{theme}'")
         # Check if already in memory
         if (user_id, theme) in self.active_conversations:
             conversation = self.active_conversations[(user_id, theme)]
@@ -70,7 +69,6 @@ class ChatMemoryManager:
         
         # Load from database
         recent_messages = self.database.get_chat_history(user_id, theme, limit=20)
-        print(f"Loaded {len(recent_messages)} messages from database for user {user_id} and theme {theme}")
         conversation = Conversation(user_id, recent_messages)
         
         # Add to memory (with cleanup if needed)

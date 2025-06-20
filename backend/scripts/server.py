@@ -81,8 +81,8 @@ class ChatServer:
         
         # Get conversation context from memory
         conversation = await self.memory_manager.get_conversation(message.user_id, message.theme)
+        conversation.add_message(message.message, sender="user")
         context = conversation.get_context()
-        print(f"Context for user {message.user_id} and theme {message.theme}: {context}")
         # Generate response (your AI logic here)
         response = self.chatBot.generate_response(context)
         
