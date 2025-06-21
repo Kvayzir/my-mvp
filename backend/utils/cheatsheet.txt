@@ -4,3 +4,9 @@ curl -X POST "http://localhost:8000/topics/create"      -H "Content-Type: applic
 
 curl -X GET "http://localhost:8000/topics/overview"
 curl -X GET "http://localhost:8000/chat/Jun/user123/history"
+
+
+git checkout "name"
+git pull
+git add (archivo)
+git commit -m "mensaje"
