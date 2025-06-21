@@ -8,7 +8,7 @@
 
 2. Activate virtual environment:
    ```bash
-   venv\Scripts\activate
+   source venv\Scripts\activate
    ```
 
 3. Install dependencies:
