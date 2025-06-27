@@ -14,7 +14,7 @@ export default function Card({
   return (
     <div 
         className="mt-2 rounded-xl bg-gray-50 text-black p-2 shadow-sm flex justify-evenly hover:bg-blue-600 hover:text-white transition-colors duration-300 cursor-pointer"
-        onClick={() => router.push(`/demo/assignment?topic=${encodeURIComponent(value)}`)}
+        onClick={() => router.push(`/demo/estudiante/assignment?topic=${encodeURIComponent(value)}`)}
     >
         <h3 className="ml-2 w-1/3">{title}</h3>
         <p className="w-1/3">{value}</p>

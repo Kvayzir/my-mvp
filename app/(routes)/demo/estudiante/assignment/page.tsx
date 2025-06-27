@@ -1,8 +1,8 @@
 "use client";
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/contexts/UserContext';
-import Chat from "@/app/ui/demo/assignment/chat";
-import Notebook from "@/app/ui/demo/notebook";
+import Chat from "@/app/components/demo/assignment/chat";
+import Notebook from "@/app/components/ui/notebook/notebook";
 
 export default function Page() {
   const searchParams = useSearchParams();

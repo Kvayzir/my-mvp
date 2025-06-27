@@ -1,11 +1,19 @@
 import { fetchCardData } from '@/app/lib/data';
 import Card from './cards';
 
-export default async function CardWrapper() {
+export default async function CardWrapper({role}: {role?: "docente" | "estudiante"} = {}) {
   const {topics} = await fetchCardData();
   console.log('CardWrapper topics:', topics);
   return (
     <>
+      <div>
+        <h2 className="text-2xl font-bold mb-4">
+          {role === 'docente' ? 'Tareas Asignadas' : 'Tareas Pendientes'}
+        </h2>
+        <p className="text-gray-700">
+          {role === 'docente' ? 'Lista de tareas asignadas a los estudiantes.' : 'Lista de tareas pendientes para completar.'}
+        </p>
+      </div>
       <div 
         className="mt-2 rounded-xl bg-green-600 text-white p-2 shadow-sm flex justify-evenly "
       >

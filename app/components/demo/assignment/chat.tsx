@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
 import { fetchChatReply } from '@/app/lib/data';
-import { MessageSkeleton } from '@/app/ui/demo/skeletons';
+import { MessageSkeleton } from '@/app/components/ui/skeletons';
 
 export default function Chat({title, user_id}: {title: string, user_id: string}) {
     // State to store all chat messages
