@@ -15,3 +15,26 @@ export async function fetchCardData() {
     throw new Error('Failed to fetch card data.');
   }
 }
+
+export async function fetchChatReply({ user_id, topic, msg }: { user_id: string, topic: string | null, msg: string }) {
+  try {
+    const response = await fetch('http://localhost:8000/chat', { //   https://my-mvp-production-4b5f.up.railway.app/chat
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: msg,
+            user_id: user_id,
+            theme: topic || 'default' // Default to 'general' if no topic
+        })
+    });
+    
+    const data = await response.json();
+    console.log('Chat initialized:', data);
+    return data.response;
+  } catch (error) {
+    console.error('Error initializing chat:', error);
+    return `Welcome to the chat about ${topic}!`;
+  }
+}
