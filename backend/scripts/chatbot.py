@@ -34,6 +34,7 @@ class ChatBot:
         if self.dummy:
             # Dummy response for testing
             print(f"Generating response for context: {context}")
+            time.sleep(2)  # Simulate processing delay
             return f"This is a dummy response. The AI prompt is: \n{context[0]['content']}\n"
         if self.hf_token:
             try:

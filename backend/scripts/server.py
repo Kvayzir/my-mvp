@@ -17,7 +17,7 @@ class ChatServer:
         self.use_database = use_database
         self.topics = []
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
-        self.chatBot = ChatBot()
+        self.chatBot = ChatBot(dummy=True)
 
         if self.use_database:
             self.db_manager = DatabaseManager()
