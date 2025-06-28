@@ -9,7 +9,7 @@ import clsx from 'clsx';
 const links = [
   { name: 'Docente', href: '/demo/docente'},
   { name: 'Estudiante', href: '/demo/estudiante'},
-  { name: 'Dashboard', href: '/demo/dashboard'},
+  { name: 'Institución', href: '/demo/institucion'}
 ];
 
 export default function NavLinks() {
