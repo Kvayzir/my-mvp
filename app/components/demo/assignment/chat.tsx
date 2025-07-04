@@ -1,18 +1,19 @@
 'use client';
-
+import { useUser } from '@/contexts/UserContext';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
 import { fetchChatReply } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
 
-export default function Chat({title, user_id}: {title: string, user_id: string}) {
+export default function Chat({title}: {title: string}) {
     // State to store all chat messages
     const [messages, setMessages] = useState<{ id: number; user: "user" | "bot"; text: string; parsed: boolean; timestamp: string }[]>([]);
     const hasInitialized = useRef(false);
     const messageIdCounter = useRef(0);
     const searchParams = useSearchParams();
     const topic = searchParams.get('topic');
+    const { userId } = useUser();
     
     // Function to add a new message
     const addMessage = (text: string, sender: "user" | "bot", parsed: boolean = true) => {
@@ -45,21 +46,28 @@ export default function Chat({title, user_id}: {title: string, user_id: string})
             if (hasInitialized.current) return;
             hasInitialized.current = true;
             const msg = `Eres un assistente de profesor de secundaria cuyo objetivo es ayudar a los alummnos a aprender. Para ello, deberás motivarlos a que se interesen en el tema, y dejarles una pregunta al final de cada mensaje tuyo. Por ejemplo, en vez de terminar dicendo "La importancia de la investigación es ...", pregunta "¿Cuáles crees que son los beneficios de la investigación?". Sé breve, sintetiza tu respuesta en 40 palabras o menos, usa tres oraciones por respuesta: la primera para contextualizar, la segunda para motivar, y la tercera para preguntar. En esta oportunidad, introduce el tema de ${topic || 'Introducción a la investigación'}.`;
-            addMessage(msg, 'bot', false);      
+            addMessage(msg, 'bot', false);     
         };
         initializeChat();
-    }); // Added dependency array
+    }, []);
 
     return (
         <div className="max-w-2xl mx-auto p-4">
             <h2 className="text-xl font-semibold mb-4">{title}</h2>
-            <Viewer user_id={user_id} messages={messages} onUpdateMessage={updateLastMessage} />
+            <Viewer user_id={userId || ""} messages={messages} onUpdateMessage={updateLastMessage} />
             <Input onSendMessage={addMessage} />
         </div>
     );
 }
 
 function Viewer({user_id, messages, onUpdateMessage}: { user_id: string, messages: { id: number; user: "user" | "bot"; parsed: boolean; text: string; timestamp: string }[], onUpdateMessage: (text: string) => void }) {
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+    // Scroll to the bottom whenever messages update
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+    
     return (
         <div className="p-4 bg-white shadow-md rounded-lg mb-4 min-h-[200px] max-h-[400px] overflow-y-auto">
             <div className="space-y-3">
@@ -81,6 +89,7 @@ function Viewer({user_id, messages, onUpdateMessage}: { user_id: string, message
                         </Suspense>
                     ))
                 )}
+                <div ref={messagesEndRef} /> {/* Scroll target */}
             </div>
         </div>
     );
@@ -91,6 +100,7 @@ function Message({text, user, user_id, parsed, timestamp, onUpdateMessage}: {tex
     const [content, setContent] = useState(parsed ? text : '');
     const searchParams = useSearchParams();
     const topic = searchParams.get('topic');
+    const { userId } = useUser();
 
     useEffect(() => {
         const fetchReply = async () => {
@@ -100,10 +110,8 @@ function Message({text, user, user_id, parsed, timestamp, onUpdateMessage}: {tex
                     const reply = await fetchChatReply({ user_id, topic, msg: text });
                     setContent(reply);
                     onUpdateMessage(reply);
-                    console.log('Updated message:', reply);
                 } catch (error) {
-                    console.error('Error fetching reply:', error);
-                    setContent('Error loading message...');
+                    setContent('Error loading message...'+error);
                 } finally {
                     setIsLoading(false);
                 }
@@ -116,15 +124,25 @@ function Message({text, user, user_id, parsed, timestamp, onUpdateMessage}: {tex
     if (isLoading) {
         return <MessageSkeleton />;
     }
+    // Determine message bubble styling based on sender
+    const isUser = user === 'user';
+    const messageClasses = `p-3 rounded-xl shadow-sm max-w-[80%] ${
+        isUser ? 'bg-blue-500 text-white self-end rounded-br-none' : 'bg-gray-200 text-gray-800 self-start rounded-bl-none'
+    }`;
+    const containerClasses = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
 
     return (
-        <div className="p-3 bg-gray-100 rounded-lg">
-            <div className="flex justify-between items-start">
-                <div>
-                    <strong className="text-blue-600">{user}:</strong>
-                    <span className="ml-2 text-gray-800">{content || text}</span>
+        <div className={containerClasses}>
+            <div className={messageClasses}>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <strong className="text-sm font-semibold capitalize">{isUser ? userId : "Bot"}:</strong>
+                        <span className="ml-2 text-base">{content}</span>
+                    </div>
                 </div>
-                <span className="text-xs text-gray-500">{timestamp}</span>
+                <div className="text-right text-xs mt-1 opacity-75">
+                    {timestamp}
+                </div>
             </div>
         </div>
     );

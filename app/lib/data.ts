@@ -31,7 +31,6 @@ export async function fetchChatReply({ user_id, topic, msg }: { user_id: string,
     });
     
     const data = await response.json();
-    console.log('Chat initialized:', data);
     return data.response;
   } catch (error) {
     console.error('Error initializing chat:', error);
