@@ -5,10 +5,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
 import { fetchChatReply } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
+import { ChatMessage } from '@/app/lib/types';
 
 export default function Chat({title}: {title: string}) {
     // State to store all chat messages
-    const [messages, setMessages] = useState<{ id: number; user: "user" | "bot"; text: string; parsed: boolean; timestamp: string }[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const hasInitialized = useRef(false);
     const messageIdCounter = useRef(0);
     const searchParams = useSearchParams();
@@ -20,7 +21,8 @@ export default function Chat({title}: {title: string}) {
         messageIdCounter.current += 1;
         const newMessage = {
             id: messageIdCounter.current, // Simple ID generation
-            user: sender,
+            user_id: userId || "", // Ensure userId is always defined
+            user_type: sender,
             text: text,
             parsed: parsed, // fetch if false
             timestamp: new Date().toLocaleTimeString()
@@ -28,14 +30,14 @@ export default function Chat({title}: {title: string}) {
         setMessages(prevMessages => [...prevMessages, newMessage]);
     };
 
-    const updateLastMessage = (text: string) => {
+    const updateLastMessage = async (text: string) => {
         setMessages(prevMessages => {
             if (prevMessages.length === 0) return prevMessages;
             const updatedMessages = [...prevMessages];
             const lastMessage = updatedMessages[updatedMessages.length - 1];
             if (lastMessage) {
-                lastMessage.text = text;
                 lastMessage.parsed = true;
+                lastMessage.text = text;
             }
             return updatedMessages;
         });
@@ -54,13 +56,13 @@ export default function Chat({title}: {title: string}) {
     return (
         <div className="max-w-2xl mx-auto p-4">
             <h2 className="text-xl font-semibold mb-4">{title}</h2>
-            <Viewer user_id={userId || ""} messages={messages} onUpdateMessage={updateLastMessage} />
+            <Viewer messages={messages} onUpdateMessage={updateLastMessage} />
             <Input onSendMessage={addMessage} />
         </div>
     );
 }
 
-function Viewer({user_id, messages, onUpdateMessage}: { user_id: string, messages: { id: number; user: "user" | "bot"; parsed: boolean; text: string; timestamp: string }[], onUpdateMessage: (text: string) => void }) {
+function Viewer({messages, onUpdateMessage}: { messages: ChatMessage[], onUpdateMessage: (text: string) => void }) {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     // Scroll to the bottom whenever messages update
@@ -69,7 +71,7 @@ function Viewer({user_id, messages, onUpdateMessage}: { user_id: string, message
     }, [messages]);
     
     return (
-        <div className="p-4 bg-white shadow-md rounded-lg mb-4 min-h-[200px] max-h-[400px] overflow-y-auto">
+        <div className="p-4 bg-white shadow-md rounded-lg mb-4 h-[500px] overflow-y-auto">
             <div className="space-y-3">
                 {messages.length === 0 ? (
                     <div className="text-gray-500 text-center py-8">
@@ -79,11 +81,7 @@ function Viewer({user_id, messages, onUpdateMessage}: { user_id: string, message
                     messages.map((message) => (
                         <Suspense key={message.id} fallback={<MessageSkeleton />}>
                             <Message 
-                                text={message.text} 
-                                user={message.user} 
-                                user_id={user_id} 
-                                parsed={message.parsed} 
-                                timestamp={message.timestamp} 
+                                chatMessage={message} 
                                 onUpdateMessage={onUpdateMessage} 
                             />
                         </Suspense>
@@ -95,21 +93,23 @@ function Viewer({user_id, messages, onUpdateMessage}: { user_id: string, message
     );
 }
 
-function Message({text, user, user_id, parsed, timestamp, onUpdateMessage}: {text: string, user: "user" | "bot", user_id: string, parsed: boolean, timestamp: string, onUpdateMessage: (text: string) => void}) {
-    const [isLoading, setIsLoading] = useState(!parsed);
-    const [content, setContent] = useState(parsed ? text : '');
+function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUpdateMessage: (text: string) => void}) {
+    const [isLoading, setIsLoading] = useState(!chatMessage.parsed);
+    const [counter, setCounter] = useState(0);
+    const [content, setContent] = useState(chatMessage.parsed ? chatMessage.text : '');
     const searchParams = useSearchParams();
     const topic = searchParams.get('topic');
     const { userId } = useUser();
 
     useEffect(() => {
         const fetchReply = async () => {
-            if (!parsed && user === 'bot') {
+            if (!chatMessage.parsed && chatMessage.user_type === 'bot') {
                 setIsLoading(true);
                 try {
-                    const reply = await fetchChatReply({ user_id, topic, msg: text });
-                    setContent(reply);
+                    const reply = await fetchChatReply({id: chatMessage.id, user_id: chatMessage.user_id, topic, msg: chatMessage.text });
+                    setCounter(prev => prev + 1);
                     onUpdateMessage(reply);
+                    setContent(reply);
                 } catch (error) {
                     setContent('Error loading message...'+error);
                 } finally {
@@ -119,13 +119,13 @@ function Message({text, user, user_id, parsed, timestamp, onUpdateMessage}: {tex
         };
 
         fetchReply();
-    }, [parsed, user, text, user_id, topic, onUpdateMessage]);
+    }, [chatMessage, topic, onUpdateMessage]);
 
     if (isLoading) {
         return <MessageSkeleton />;
     }
     // Determine message bubble styling based on sender
-    const isUser = user === 'user';
+    const isUser = chatMessage.user_type === 'user';
     const messageClasses = `p-3 rounded-xl shadow-sm max-w-[80%] ${
         isUser ? 'bg-blue-500 text-white self-end rounded-br-none' : 'bg-gray-200 text-gray-800 self-start rounded-bl-none'
     }`;
@@ -141,7 +141,8 @@ function Message({text, user, user_id, parsed, timestamp, onUpdateMessage}: {tex
                     </div>
                 </div>
                 <div className="text-right text-xs mt-1 opacity-75">
-                    {timestamp}
+                    {chatMessage.timestamp}
+                    <span className="ml-2 text-base">{counter}</span>
                 </div>
             </div>
         </div>

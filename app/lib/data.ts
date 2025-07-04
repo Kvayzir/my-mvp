@@ -1,3 +1,5 @@
+import { ChatReplyRequest } from "./types";
+
 export async function fetchCardData() {
   try {
     // You can probably combine these into a single SQL query
@@ -16,24 +18,22 @@ export async function fetchCardData() {
   }
 }
 
-export async function fetchChatReply({ user_id, topic, msg }: { user_id: string, topic: string | null, msg: string }) {
+export async function fetchChatReply(request: ChatReplyRequest) {
   try {
     const response = await fetch('http://localhost:8000/chat', { //   https://my-mvp-production-4b5f.up.railway.app/chat
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            message: msg,
-            user_id: user_id,
-            theme: topic || 'default' // Default to 'general' if no topic
-        })
+        body: JSON.stringify(request)
     });
     
+    console.log('Chat message:', request.id);
     const data = await response.json();
+    console.log('Chat response:', data.response);
     return data.response;
   } catch (error) {
     console.error('Error initializing chat:', error);
-    return `Welcome to the chat about ${topic}!`;
+    return `Welcome to the chat about ${request.topic}!`;
   }
 }
