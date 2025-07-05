@@ -12,14 +12,21 @@ class Conversation:
         self.messages: List[SimpleChatMessage] = initial_messages or []
         self.last_activity = time.time()
         self.max_messages = 20  # Keep last 20 messages in memory
+
+    def __repr__(self):
+        dialogue = "\n".join(
+            f"{msg.sender}: {msg.content} ({datetime.fromtimestamp(msg.timestamp)})"
+            for msg in self.messages
+        )
+        return f"Dialogue History of {self.user_id}\n" + dialogue or "No messages in conversation"
     
-    def add_message(self, content: str, sender: str):
+    async def add_message(self, content: str, sender: str):
         """Add message to conversation and maintain size limit"""
+        print(f"📝 Added message from {sender}: {content}")
         message = SimpleChatMessage(content, sender, time.time())
         self.messages.append(message)
         self._cache_dirty = True
         self.last_activity = time.time()
-        
         # Keep only recent messages in memory
         if len(self.messages) > self.max_messages:
             self.messages = self.messages[-self.max_messages:]
@@ -58,18 +65,38 @@ class ChatMemoryManager:
         self.active_conversations: Dict[Tuple[str, str], Conversation] = {}
         self.max_memory_conversations = max_memory_conversations
         self.conversation_timeout = 1800  # 30 minutes
+
+    def clear_local_chats(self):
+        """Clear all active conversations in memory"""
+        print("Clearing all active conversations in memory")
+        self.active_conversations = {}
+
+    def check_idempotency(self, user_id: str, theme: str, msg: str) -> bool:
+        """Check if message already replied"""
+        if (user_id, theme) in self.active_conversations:
+            conversation = self.active_conversations[(user_id, theme)]
+            if conversation.get_context()[-2]["content"] == msg:
+                return True
+        return False
+    
+    def idempotency_response(self, user_id: str, theme: str):
+        return self.active_conversations[(user_id, theme)].get_context()[-1]["content"]
+
     
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
         """Get or create conversation with database fallback"""
         # Check if already in memory
+        print("Active conversations:", self.active_conversations)
         if (user_id, theme) in self.active_conversations:
+            print(f"🔍 Found conversation in memory for user {user_id} with theme {theme}")
             conversation = self.active_conversations[(user_id, theme)]
             conversation.last_activity = time.time()  # Update activity
             return conversation
         
         # Load from database
         recent_messages = self.database.get_chat_history(user_id, theme, limit=20)
-        conversation = Conversation(user_id, recent_messages)
+        print(recent_messages)
+        conversation = Conversation(user_id, initial_messages=recent_messages)
         
         # Add to memory (with cleanup if needed)
         await self._add_to_memory(user_id, theme, conversation)
@@ -81,17 +108,20 @@ class ChatMemoryManager:
         # Save to database first (WIP)
         message = {
             "user_id": msg.user_id or "anonymous",
-            "theme": msg.theme or "default",
-            "message": msg.message,
+            "theme": msg.topic or "default",
+            "message": msg.msg,
             "response": response,
             "response_time_ms": response_time_ms,
         }
         await self.database.save_chat_message(message)
-        
+        print(f"💾 Saved message to database: {message}")
         # Update memory cache
-        conversation = await self.get_conversation(msg.user_id, msg.theme)
-        conversation.add_message(msg.message, "user")
-        conversation.add_message(response, "bot")
+        try:
+            await self.active_conversations[(msg.user_id, msg.topic)].add_message(response, "bot")
+        except KeyError:
+            print(f"❌ No active conversation found for user {msg.user_id} with theme")
+        except Exception as e:
+            print(f"❌ Error updating memory cache: {e}")
     
     async def _add_to_memory(self, user_id: str, theme: str, conversation: Conversation):
         """Add conversation to memory with cleanup"""
@@ -108,6 +138,7 @@ class ChatMemoryManager:
             del self.active_conversations[oldest_user]
         
         self.active_conversations[(user_id, theme)] = conversation
+        print(f"🗃️ Added conversation for user {user_id} with theme {theme} to memory")
     
     async def _cleanup_expired_conversations(self):
         """Remove expired conversations from memory"""

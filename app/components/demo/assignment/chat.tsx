@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
 import { fetchChatReply } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
-import { ChatMessage } from '@/app/lib/types';
+import { ChatMessage, ChatReplyRequest } from '@/app/lib/types';
 
 export default function Chat({title}: {title: string}) {
     // State to store all chat messages
@@ -106,7 +106,13 @@ function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUp
             if (!chatMessage.parsed && chatMessage.user_type === 'bot') {
                 setIsLoading(true);
                 try {
-                    const reply = await fetchChatReply({id: chatMessage.id, user_id: chatMessage.user_id, topic, msg: chatMessage.text });
+                    const request = {
+                        id: chatMessage.id, 
+                        user_id: userId, 
+                        topic, 
+                        msg: chatMessage.text 
+                    } as ChatReplyRequest;
+                    const reply = await fetchChatReply(request);
                     setCounter(prev => prev + 1);
                     onUpdateMessage(reply);
                     setContent(reply);

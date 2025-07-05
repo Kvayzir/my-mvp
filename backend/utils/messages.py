@@ -14,9 +14,10 @@ class UserRegistration(BaseModel):
     classroom: Optional[str] = "null"
 
 class ChatMessage(BaseModel):
-    message: str
+    id: int
+    msg: str
     user_id: Optional[str] = "anonymous"
-    theme: Optional[str] = "default"
+    topic: Optional[str] = "default"
 
 class ChatResponse(BaseModel):
     response: str

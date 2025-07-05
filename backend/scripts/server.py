@@ -79,49 +79,20 @@ class ChatServer:
         """
         start_time = time.time()
         
+        if self.memory_manager.check_idempotency(message.user_id, message.topic, message.msg):
+            print("🔁 Idempotent message detected, skipping processing")
+            return self.memory_manager.idempotency_response(message.user_id, message.topic)
         # Get conversation context from memory
-        conversation = await self.memory_manager.get_conversation(message.user_id, message.theme)
-        conversation.add_message(message.message, sender="user")
-        context = conversation.get_context()
+        conversation = await self.memory_manager.get_conversation(message.user_id, message.topic)
+        await conversation.add_message(message.msg, sender="user")
         # Generate response (your AI logic here)
-        response = self.chatBot.generate_response(context)
+        response = self.chatBot.generate_response(conversation.get_context())
         
         # Save message 
         await self.memory_manager.save_and_cache_message(message, response, time.time() - start_time)
-        
+        print(f"🤖 Bot response: {response}")
         return response
         
-        # Store user message in history
-        user_entry = {
-            "type": "user",
-            "message": message.message,
-            "user_id": message.user_id,
-            "timestamp": start_time
-        }
-        
-        # Generate response using chatbot
-        
-        self.chatbotsDict[(message.user_id, message.theme)] = self.chatbotsDict.get(user_id, ChatBot())
-        bot_response = self.chatbotsDict[user_id].generate_response(message, user_id, user_entry)
-        
-        # Calculate response time
-        response_time_ms = int((time.time() - start_time) * 1000)
-
-        # Save to database or memory
-        if self.use_database:
-            try:
-                message_id = self.db_manager.save_chat_message(
-                    user_id=user_id,
-                    message=message,
-                    response=bot_response,
-                    response_time_ms=response_time_ms
-                )
-                print(f"💾 Saved message {message_id} to database")
-            except Exception as e:
-                print(f"❌ Database save failed: {e}")
-
-        return bot_response
-    
     def _get_recent_history_from_db(self, user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent chat history from database for a specific user"""
         try:
@@ -161,6 +132,9 @@ class ChatServer:
             "total_messages": 0
         }
     
+    def clear_local_chats(self):
+        self.memory_manager.clear_local_chats()
+    
     def clear_chat_history(self, user_id: str = "anonymus") -> Dict[str, str]:
         """
         Clear all chat history.
@@ -180,7 +154,6 @@ class ChatServer:
                     "message": f"Failed to clear database: {e}",
                     "source": "database_error"
                 }
-        self.chatbotsDict.get(user_id, ChatBot()).clear_chat_history()
         return {"message": "Chat history cleared"}
     
     def get_chat_stats(self, user_id: str = "anonymus") -> Dict[str, Any]:

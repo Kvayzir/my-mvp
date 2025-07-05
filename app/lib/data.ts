@@ -28,7 +28,7 @@ export async function fetchChatReply(request: ChatReplyRequest) {
         body: JSON.stringify(request)
     });
     
-    console.log('Chat message:', request.id);
+    console.log('Chat message:', request);
     const data = await response.json();
     console.log('Chat response:', data.response);
     return data.response;

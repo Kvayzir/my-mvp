@@ -112,6 +112,7 @@ class DatabaseManager:
     async def save_chat_message(self, msg: dict):
         """Save a chat message to the database"""
         db = SessionLocal()
+        print(f"Saving chat message: {msg}")
         try:
             message = ChatMessage(
                 user_id=msg.get("user_id", "anonymous"),
@@ -157,6 +158,7 @@ class DatabaseManager:
         try:
             query = db.query(ChatMessage)
             query = query.filter(ChatMessage.user_id == user_id, ChatMessage.theme == theme)
+            
 
             if not query.count():
                 print(f"No chat history found for user {user_id} with theme {theme}. Returning learning journey prompt.")

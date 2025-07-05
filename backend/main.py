@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import time
 from dotenv import load_dotenv
 from scripts.server import ChatServer
@@ -14,12 +15,29 @@ from utils.messages import (
 load_dotenv()
 
 # Initialize components
-def get_chat_server():
-    """Dependency to get the chat server instance"""
-    return ChatServer()
+chat_server_instance = None
 
-# Create FastAPI app
-app = FastAPI(title="Chat Backend with Llama", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global chat_server_instance
+    print("Starting up - initializing ChatServer...")
+    chat_server_instance = ChatServer()
+    # You can also initialize DB connections here
+    yield
+    # Shutdown
+    print("Shutting down - cleaning up ChatServer...")
+    if chat_server_instance:
+        # Clean up resources if needed
+        chat_server_instance.clear_local_chats()  
+
+# Create FastAPI app with lifespan
+app = FastAPI(lifespan=lifespan, title="Chat Backend with Llama", version="1.0.0")
+
+def get_chat_server() -> ChatServer:
+    if chat_server_instance is None:
+        raise HTTPException(status_code=500, detail="ChatServer not initialized")
+    return chat_server_instance
 
 # Add CORS middleware
 app.add_middleware(
@@ -58,10 +76,11 @@ async def chat_endpoint(
     
     try:
         # Validate input
-        if not chat_message.message.strip():
+        if not chat_message.msg.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
         # Process message through chat server
+        print(f"Processing chat message: {chat_message}\n\n")
         bot_response = await chat_server.process_message(chat_message)
         
         # Calculate response time
