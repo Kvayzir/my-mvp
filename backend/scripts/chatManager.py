@@ -31,7 +31,7 @@ class Conversation:
         if len(self.messages) > self.max_messages:
             self.messages = self.messages[-self.max_messages:]
     
-    def get_context(self, max_messages: int = 10) -> List[Dict[str, str]]:
+    def get_context(self, max_messages: int = 20) -> List[Dict[str, str]]:
         """Optimized context retrieval with caching"""
         cache_key = f"context_{max_messages}"
         
@@ -86,7 +86,6 @@ class ChatMemoryManager:
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
         """Get or create conversation with database fallback"""
         # Check if already in memory
-        print("Active conversations:", self.active_conversations)
         if (user_id, theme) in self.active_conversations:
             print(f"🔍 Found conversation in memory for user {user_id} with theme {theme}")
             conversation = self.active_conversations[(user_id, theme)]
@@ -114,7 +113,7 @@ class ChatMemoryManager:
             "response_time_ms": response_time_ms,
         }
         await self.database.save_chat_message(message)
-        print(f"💾 Saved message to database: {message}")
+        print("💾 Saved message to database")
         # Update memory cache
         try:
             await self.active_conversations[(msg.user_id, msg.topic)].add_message(response, "bot")

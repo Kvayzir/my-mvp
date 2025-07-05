@@ -78,8 +78,12 @@ class ChatServer:
             Generated response string
         """
         start_time = time.time()
-        
-        if self.memory_manager.check_idempotency(message.user_id, message.topic, message.msg):
+        try:
+            is_idempotent = self.memory_manager.check_idempotency(message.user_id, message.topic, message.msg)
+        except Exception as e:
+            print(f"❌ Error checking idempotency: {e}")
+            is_idempotent = False
+        if is_idempotent:
             print("🔁 Idempotent message detected, skipping processing")
             return self.memory_manager.idempotency_response(message.user_id, message.topic)
         # Get conversation context from memory

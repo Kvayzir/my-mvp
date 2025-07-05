@@ -33,9 +33,9 @@ class ChatBot:
     def _generate_response(self, context: List[Dict[str, str]]) -> str:
         if self.dummy:
             # Dummy response for testing
-            print(f"Generating response for context: {context}")
+            print(f"Generating response for context: {len(context)}")
             time.sleep(2)  # Simulate processing delay
-            return f"This is a dummy response. The AI prompt is: \n{context[0]['content']}\n"
+            return f"This is a dummy response {len(context)}. The AI prompt is from: \n{context[1]['role']}\n"
         if self.hf_token:
             try:
                 return self._generate_llama_response(context)

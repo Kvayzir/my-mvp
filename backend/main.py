@@ -81,7 +81,11 @@ async def chat_endpoint(
         
         # Process message through chat server
         print(f"Processing chat message: {chat_message}\n\n")
-        bot_response = await chat_server.process_message(chat_message)
+        try:
+            bot_response = await chat_server.process_message(chat_message)
+        except Exception as e:
+            print(f"❌ Error processing message: {e}")
+            raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
         
         # Calculate response time
         response_time = int((time.time() - start_time) * 1000)
