@@ -4,6 +4,7 @@ Chatbot module handling AI response generation using Llama via Hugging Face API.
 import os
 import requests
 import time
+from huggingface_hub import InferenceClient
 from typing import List, Dict, Any
 
 class ChatBot:
@@ -12,9 +13,13 @@ class ChatBot:
     def __init__(self, dummy=False):
         """Initialize the chatbot with API configuration."""
         self.dummy = dummy
-        self.hf_api_url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct"
-        self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
         self.default_max_tokens = 200
+        self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
+        self.client = InferenceClient(
+            provider="novita",
+            api_key=self.hf_token,
+        )
+        self.model = "meta-llama/Llama-3.1-8B-Instruct"
         
 
     def generate_response(self, context: List[Dict[str, str]]) -> str:
@@ -105,19 +110,24 @@ class ChatBot:
         }
         
         try:
-            response = requests.post(
-                self.hf_api_url, 
-                headers=headers, 
-                json=payload, 
-                timeout=80
+            # response = requests.post(
+            #     self.hf_api_url, 
+            #     headers=headers, 
+            #     json=payload, 
+            #     timeout=80
+            # )
+            # response.raise_for_status()
+            # 
+            # result = response.json()
+            # generated_text = self._extract_response_text(result)
+            # cleaned_response = self._clean_response(generated_text, conversation)
+            completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
             )
-            response.raise_for_status()
-            
-            result = response.json()
-            generated_text = self._extract_response_text(result)
-            cleaned_response = self._clean_response(generated_text, conversation)
-            
-            return cleaned_response if cleaned_response else "I'm not sure how to respond to that."
+            print(f"Response from Llama API:")
+            print(completion.choices[0].message.content)
+            return completion.choices[0].message.content if completion.choices[0].message.content else "I'm not sure how to respond to that."
         
         except requests.exceptions.Timeout:
             raise Exception("Request timed out - the model might be loading")

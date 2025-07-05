@@ -18,6 +18,21 @@ export async function fetchCardData() {
   }
 }
 
+export async function fetchChatLoad({user, topic}: {user: string, topic: string}) {
+  try {
+    const response = await fetch(`http://localhost:8000/chat/${user}/${topic}`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(res => res.json());
+    console.log('Chat response:', response);
+    return response;
+  } catch (error) {
+    console.error('Error initializing chat:', error);
+  }
+}
+
 export async function fetchChatReply(request: ChatReplyRequest) {
   try {
     const response = await fetch('http://localhost:8000/chat', { //   https://my-mvp-production-4b5f.up.railway.app/chat

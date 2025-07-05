@@ -17,7 +17,7 @@ class ChatServer:
         self.use_database = use_database
         self.topics = []
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
-        self.chatBot = ChatBot(dummy=True)
+        self.chatBot = ChatBot(dummy=False)
 
         if self.use_database:
             self.db_manager = DatabaseManager()
@@ -64,6 +64,27 @@ class ChatServer:
         Retrieve all topics available in the chat system.
         """
         return self.db_manager.get_topics()
+
+    def load_chat(self, user_id: str, topic: str) -> List[Dict[str, Any]]:
+        """
+        Load chat history for a specific user and topic.
+        
+        Args:
+            user_id: Unique identifier for the user
+            topic: Topic of the chat
+            
+        Returns:
+            List of messages in the chat history
+        """
+        if self.use_database:
+            try:
+                return self.db_manager.get_chat_history(user_id=user_id, theme=topic)
+            except Exception as e:
+                print(f"❌ Failed to load chat history from database: {e}")
+                return []
+        else:
+            # Fallback to in-memory storage
+            return self.memory_manager.get_conversation(user_id, topic).get_context()
 
     async def process_message(self, message: ChatMessage) -> str:
         """

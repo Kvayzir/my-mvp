@@ -8,7 +8,8 @@ from utils.messages import (
     UserRegistration,
     ChatMessage,
     ChatResponse,
-    TopicMessage
+    TopicMessage,
+    ChatHistoryLoad
 )
 
 # Load environment variables from .env file
@@ -66,6 +67,22 @@ async def register_user(
     chat_server.register_user(user.user_id)
     return {"message": f"User '{user.user_id}' registered successfully"}
 
+
+@app.get("/chat/{user}/{topic}", response_model=ChatHistoryLoad)
+async def chat_load_endpoint(
+    user: str,
+    topic: str,
+    chat_server: ChatServer = Depends(get_chat_server)
+):
+
+    try:
+        msgList = chat_server.load_chat(user, topic)
+        print(msgList)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading chat: {str(e)}")
+
+    return ChatHistoryLoad(msgList=msgList)
+    
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(
     chat_message: ChatMessage,

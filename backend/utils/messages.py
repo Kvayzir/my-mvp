@@ -19,6 +19,9 @@ class ChatMessage(BaseModel):
     user_id: Optional[str] = "anonymous"
     topic: Optional[str] = "default"
 
+class ChatHistoryLoad(BaseModel):
+    msgList: list[SimpleChatMessage]
+
 class ChatResponse(BaseModel):
     response: str
     timestamp: float
