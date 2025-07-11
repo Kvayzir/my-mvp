@@ -27,13 +27,19 @@ export interface ChatMessage {
   topic?: string;
 }
 
-export type MessageSender = 'user' | 'bot';
+export type MessageSender = 'user' | 'bot' | 'system';
 
 export interface ChatReplyRequest {
   id: number;
   user_id: string;
   topic: string | null;
   msg: string;
+}
+
+export interface ChatProps {
+  title: string;
+  level: string;
+  onSetChatState: (state: JourneyState) => void;
 }
 
 // ============================================================================
@@ -175,7 +181,7 @@ export interface NotebookEntry {
 export interface TabsConfigEntry {
   onCheck: () => void;
   onSubmit: () => void;
-  onSetLevel: (level: string) => void;
+  mapProps: JourneyMapProps;
 }
 
 export type NotebookEntryType = 'note' | 'question' | 'answer' | 'reflection';
@@ -189,6 +195,13 @@ export interface JourneyIconEntry {
 }
 
 export type JourneyIconType = 'history' | 'biology' | 'science' | 'mystery' | 'goal' | 'magic' | 'nature' | 'space' | 'art';
+
+export interface JourneyMapProps {
+  onSetLevel: (level: string) => void;
+  state: JourneyState; // Represents the current state of the notebook or journey
+}
+
+export type JourneyState = 'start' | 'in progress' | 'end' | 'complete';
 
 // ============================================================================
 // Dashboard & Analytics Types

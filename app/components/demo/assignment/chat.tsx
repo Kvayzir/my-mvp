@@ -5,19 +5,20 @@ import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
 import { fetchChatReply } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
-import { ChatMessage, ChatReplyRequest } from '@/app/lib/types';
+import { ChatMessage, ChatProps, ChatReplyRequest } from '@/app/lib/types';
 
-export default function Chat({title}: {title: string}) {
+export default function Chat(props: ChatProps) {
     // State to store all chat messages
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const hasInitialized = useRef(false);
+    const previousLevel = useRef<string | null>(null);
     const messageIdCounter = useRef(0);
     const searchParams = useSearchParams();
     const topic = searchParams.get('topic');
     const { userId } = useUser();
     
     // Function to add a new message
-    const addMessage = (text: string, sender: "user" | "bot", parsed: boolean = true) => {
+    const addMessage = (text: string, sender: "user" | "bot" | "system", parsed: boolean = true) => {
         messageIdCounter.current += 1;
         const newMessage = {
             id: messageIdCounter.current, // Simple ID generation
@@ -27,6 +28,18 @@ export default function Chat({title}: {title: string}) {
             parsed: parsed, // fetch if false
             timestamp: new Date().toLocaleTimeString()
         };
+        if (text ==='continue') {
+            alert('Progression made');
+            props.onSetChatState('in progress');
+        }
+        if (text ==='end') {
+            alert('Goal on sight made');
+            props.onSetChatState('end');
+        }
+        if (text ==='start') {
+            alert('Initialization made');
+            props.onSetChatState('start');
+        }
         setMessages(prevMessages => [...prevMessages, newMessage]);
     };
 
@@ -53,9 +66,32 @@ export default function Chat({title}: {title: string}) {
         initializeChat();
     }, []);
 
+    useEffect(() => {
+        // Skip if chat hasn't been initialized yet or if this is the initial level
+        if (!hasInitialized.current) return;
+
+        if (previousLevel.current === null) {
+            previousLevel.current = props.level;
+            return;
+        }
+        
+        // Only proceed if the level actually changed
+        if (previousLevel.current !== props.level) {
+            const handleLevelChange = async () => {
+                addMessage(`Iniciando ${props.level}`, 'system', true);
+                const msg = `Ahora vamos a cambiar el nivel de dificultad a ${props.level}. Ajusta tu siguiente respuesta al nivel ${props.level} y continúa motivando al estudiante. Haz una pregunta apropiada para este nuevo nivel sobre el tema ${topic || 'Introducción a la investigación'}.`;
+                addMessage(msg, 'bot', false);
+            };
+            
+            handleLevelChange();
+            previousLevel.current = props.level; // Update the previous level
+        }
+    }, [props.level]);
+
     return (
         <div className="max-w-2xl mx-auto p-4">
-            <h2 className="text-xl font-semibold mb-4">{title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{props.title}</h2>
+            <h3 className="text-xl font-semibold mb-4">{props.level}</h3>
             <Viewer messages={messages} onUpdateMessage={updateLastMessage} />
             <Input onSendMessage={addMessage} />
         </div>
@@ -103,42 +139,54 @@ function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUp
 
     useEffect(() => {
         const fetchReply = async () => {
-            if (!chatMessage.parsed && chatMessage.user_type === 'bot') {
-                setIsLoading(true);
-                try {
-                    const request = {
-                        id: chatMessage.id, 
-                        user_id: userId, 
-                        topic, 
-                        msg: chatMessage.text 
-                    } as ChatReplyRequest;
-                    const reply = await fetchChatReply(request);
-                    setCounter(prev => prev + 1);
-                    onUpdateMessage(reply);
-                    setContent(reply);
-                } catch (error) {
-                    setContent('Error loading message...'+error);
-                } finally {
-                    setIsLoading(false);
-                }
+            if (chatMessage.user_type === 'system'){
+                console.log('System message, skipping reply fetch');
+                return;
+            }
+            if (chatMessage.parsed || chatMessage.user_type !== 'bot') {
+                return;
+            }
+            setIsLoading(true);
+            try {
+                const request = {
+                    id: chatMessage.id, 
+                    user_id: userId, 
+                    topic, 
+                    msg: chatMessage.text 
+                } as ChatReplyRequest;
+                const reply = await fetchChatReply(request);
+                setCounter(prev => prev + 1);
+                onUpdateMessage(reply);
+                setContent(reply);
+            } catch (error) {
+                setContent('Error loading message...'+error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         fetchReply();
-    }, [chatMessage, topic, onUpdateMessage]);
+    }, [chatMessage, topic, onUpdateMessage, userId]);
 
     if (isLoading) {
         return <MessageSkeleton />;
     }
     // Determine message bubble styling based on sender
-    const isUser = chatMessage.user_type === 'user';
-    const messageClasses = `p-3 rounded-xl shadow-sm max-w-[80%] ${
-        isUser ? 'bg-blue-500 text-white self-end rounded-br-none' : 'bg-gray-200 text-gray-800 self-start rounded-bl-none'
-    }`;
-    const containerClasses = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
-
-    return (
-        <div className={containerClasses}>
+    const createMessageBubble = () => {
+        if (chatMessage.user_type === 'system') {
+            return (
+                <div className="p-1 bg-yellow-100 text-yellow-800 rounded-lg shadow-sm">
+                    <p className="ml-2 text-center italic">{content}</p>
+                </div>
+            );
+        }
+        const isUser = chatMessage.user_type === 'user';
+        const messageClasses = `p-3 rounded-xl shadow-sm max-w-[80%] ${
+            isUser ? 'bg-blue-500 text-white self-end rounded-br-none' : 'bg-gray-200 text-gray-800 self-start rounded-bl-none'
+        }`;
+        const containerClasses = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+        return (
+            <div className={containerClasses}>
             <div className={messageClasses}>
                 <div className="flex justify-between items-start">
                     <div>
@@ -152,6 +200,14 @@ function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUp
                 </div>
             </div>
         </div>
+        );
+    }
+    
+
+    return (
+        <>
+            {createMessageBubble()}
+        </>
     );
 }
 

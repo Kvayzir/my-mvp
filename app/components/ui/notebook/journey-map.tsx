@@ -1,33 +1,33 @@
-import { JourneyIconEntry } from "@/app/lib/types";
+import { JourneyIconEntry, JourneyMapProps } from "@/app/lib/types";
 import JourneyIcon from "./journey-icon";
 
-export default function JourneyMap({onSetLevel}: {onSetLevel: (level:string) => void}) {
+export default function JourneyMap(props: JourneyMapProps) {
     // Configuration for concentric circles
   const journeyData = [
     // Inner circle (center)
     {
       ring: 0,
       items: [
-        { name: "Your Journey", type: "goal", color: "indigo", size: "lg", onClick: () => onSetLevel("goal") } as JourneyIconEntry
+        { name: "Your Journey", type: "goal", color: "purple", size: "lg", onClick: () => props.onSetLevel("goal") } as JourneyIconEntry
       ]
     },
     // First ring
     {
       ring: 1,
       items: [
-        { name: "Célula Vegetal", type: "nature", color: "green", onClick: () => onSetLevel("cellVeg") } as JourneyIconEntry,
-        { name: "Célula Animal", type: "biology", color: "purple", onClick: () => onSetLevel("cellAn") } as JourneyIconEntry,
-        { name: "Energía", type: "magic", color: "orange", onClick: () => onSetLevel("energy") } as JourneyIconEntry,
-        { name: "Partes de la Célula", type: "mystery", color: "red", onClick: () => onSetLevel("parts") }  as JourneyIconEntry
+        { name: "Célula Vegetal", type: "nature", color: "green", onClick: () => props.onSetLevel("cellVeg") } as JourneyIconEntry,
+        { name: "Célula Animal", type: "biology", color: "pink", onClick: () => props.onSetLevel("cellAn") } as JourneyIconEntry,
+        { name: "Energía", type: "magic", color: "orange", onClick: () => props.onSetLevel("energy") } as JourneyIconEntry,
+        { name: "Partes de la Célula", type: "mystery", color: "red", onClick: () => props.onSetLevel("parts") }  as JourneyIconEntry
       ]
     },
     // Second ring
     {
       ring: 2,
       items: [
-        { name: "History Journey", type: "history", color: "blue", onClick: () => onSetLevel("history") } as JourneyIconEntry,
-        { name: "Science Journey", type: "science", color: "yellow", onClick: () => onSetLevel("science") } as JourneyIconEntry,
-        { name: "Mystery Journey", type: "mystery", color: "indigo", onClick: () => onSetLevel("mystery") } as JourneyIconEntry,
+        { name: "History Journey", type: "history", color: "blue", onClick: () => props.onSetLevel("history") } as JourneyIconEntry,
+        { name: "Science Journey", type: "science", color: "yellow", onClick: () => props.onSetLevel("science") } as JourneyIconEntry,
+        { name: "Mystery Journey", type: "mystery", color: "indigo", onClick: () => props.onSetLevel("mystery") } as JourneyIconEntry,
       ]
     }
   ];
@@ -41,7 +41,7 @@ export default function JourneyMap({onSetLevel}: {onSetLevel: (level:string) => 
 
   // Ring configurations
   const ringConfig: { [key: number]: { radius: number; color: string } } = {
-    0: { radius: 0, color: 'bg-indigo-100' },
+    0: { radius: 0, color: 'bg-red-100' },
     1: { radius: 100, color: 'bg-blue-100' },
     2: { radius: 200, color: 'bg-purple-100' }
   };
@@ -55,26 +55,45 @@ export default function JourneyMap({onSetLevel}: {onSetLevel: (level:string) => 
         
         {/* Concentric Circle Backgrounds */}
         {Object.entries(ringConfig).reverse().map(([ring, config]) => (
-          ring !== '0' && (
-            <div
+          <div
               key={ring}
               className={`absolute rounded-full border-2 border-dashed border-opacity-30 ${config.color} bg-opacity-10`}
               style={{
-                  width: `${config.radius * 2 + 80}px`,
-                  height: `${config.radius * 2 + 80}px`,
+                  width: `${config.radius * 2 + 96}px`,
+                  height: `${config.radius * 2 + 96}px`,
                   borderColor: config.color.replace('bg-', '').replace('-100', '-300'),
                   left: `50%`,
                   top: `50%`,
                   transform: `translate(-50%, -50%)`,
               }}
             />
-          )
         ))}
         
         {/* Journey Icons */}
         {journeyData.map((ringData: { ring: number; items: JourneyIconEntry[] }) => (
           <div key={ringData.ring}>
             {ringData.items.map((item: JourneyIconEntry, index: number) => {
+                if (ringData.ring === 1 && props.state === 'start') {
+                    // If the ring is 1 and state is 'start', skip rendering
+                    return null;
+                }
+                if (ringData.ring === 0 && props.state !== 'end') {
+                    return (
+                    <div
+                        key={`${ringData.ring}-${index}`}
+                        className="absolute"
+                        style={{
+                            left: `50%`,
+                            top: `50%`,
+                            transform: `translate(-50%, -50%)`,
+                            color: 'white',
+                        }}
+                    > Goal </div>
+                );
+                }
+                if (ringData.ring === 0 && props.state === 'complete') {
+                    alert("You have completed the journey!");
+                }
               const { x, y } = getCircularPosition(
                 index, 
                 ringData.items.length, 
@@ -140,7 +159,7 @@ export default function JourneyMap({onSetLevel}: {onSetLevel: (level:string) => 
       <div className="mt-8 text-center">
         <div className="flex justify-center space-x-4 text-xs text-gray-500">
           <span className="flex items-center">
-            <div className="w-3 h-3 bg-indigo-100 rounded-full mr-1 border border-indigo-300"></div>
+            <div className="w-3 h-3 bg-red-100 rounded-full mr-1 border border-red-300"></div>
             Center
           </span>
           <span className="flex items-center">

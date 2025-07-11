@@ -6,21 +6,21 @@ import JourneyMap from '../journey-map';
 export const createTabsConfig = (props: TabsConfigEntry) => [
   {
     id: 0,
-    label: "Notes",
-    icon: "📝",
-    content: <NotesContent onCheck={props.onCheck} onSubmit={props.onSubmit} />
+    label: "Instructions",
+    icon: "✅",
+    content: <TasksContent />
   },
   {
     id: 1,
     label: "Journey",
     icon: "🗺️",
-    content: <JourneyMap onSetLevel={props.onSetLevel} />
+    content: <JourneyMap onSetLevel={props.mapProps.onSetLevel} state={props.mapProps.state} />
   },
   {
     id: 2,
-    label: "Tasks",
-    icon: "✅",
-    content: <TasksContent />
+    label: "Report",
+    icon: "📝",
+    content: <NotesContent onCheck={props.onCheck} onSubmit={props.onSubmit} />
   },
   {
     id: 3,

@@ -37,20 +37,29 @@ export function NotesContent({ onCheck, onSubmit }: {onCheck: () => void, onSubm
 export function TasksContent(){
     return (
         <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-700 mb-6 text-center">Tasks</h2>
+            <h2 className="text-4xl font-bold text-gray-700 mb-6 text-center">Intrucciones</h2>
+            <p className="text-3l text-gray-500 mb-8 pt-[20px]">Completar 3 temas del Viaje de Aprendizaje y escribir un reporte libre sobre los temas aprendidos</p>
             <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-                <input type="checkbox" className="w-5 h-5 text-blue-500" />
-                <span className="text-gray-700">Complete project documentation</span>
-            </div>
-            <div className="flex items-center space-x-3">
-                <input type="checkbox" className="w-5 h-5 text-blue-500" />
-                <span className="text-gray-700">Review code changes</span>
-            </div>
-            <div className="flex items-center space-x-3">
-                <input type="checkbox" className="w-5 h-5 text-blue-500" defaultChecked />
-                <span className="text-gray-700 line-through">Design mockups</span>
-            </div>
+                <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="w-5 h-5 text-blue-500" />
+                    <span className="text-gray-700">Completar introducción</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="w-5 h-5 text-blue-500" />
+                    <span className="text-gray-700">Completar Tema 1</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="w-5 h-5 text-blue-500" />
+                    <span className="text-gray-700">Completar Tema 2</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="w-5 h-5 text-blue-500" />
+                    <span className="text-gray-700">Completar Tema 3</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                    <input type="checkbox" className="w-5 h-5 text-blue-500" />
+                    <span className="text-gray-700">Enviar reporte</span>
+                </div>
             </div>
         </div>
     );

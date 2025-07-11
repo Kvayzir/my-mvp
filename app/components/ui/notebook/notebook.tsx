@@ -4,11 +4,11 @@ import ContentArea from './elements/content-area';
 import TabsContainer from './elements/tabs-container';
 import useNotebook from './hooks/use-notebook';
 import { createTabsConfig } from './elements/tabs-config';
-import { TabsConfigEntry } from '@/app/lib/types';
+import { TabsConfigEntry, JourneyMapProps } from '@/app/lib/types';
 
-const Notebook = (prop: {setLevel: (level: string) => void}) => {
+const Notebook = (props: JourneyMapProps) => {
   const { activeTab, handleTabChange, handleCheck, handleSubmit } = useNotebook();
-  const tabs = createTabsConfig({onCheck: handleCheck, onSubmit: handleSubmit, onSetLevel: prop.setLevel} as TabsConfigEntry);
+  const tabs = createTabsConfig({onCheck: handleCheck, onSubmit: handleSubmit, mapProps: props} as TabsConfigEntry);
 
   return (
     <NotebookBackground>
