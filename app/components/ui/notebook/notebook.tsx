@@ -4,10 +4,11 @@ import ContentArea from './elements/content-area';
 import TabsContainer from './elements/tabs-container';
 import useNotebook from './hooks/use-notebook';
 import { createTabsConfig } from './elements/tabs-config';
+import { TabsConfigEntry } from '@/app/lib/types';
 
-const Notebook = () => {
+const Notebook = (prop: {setLevel: (level: string) => void}) => {
   const { activeTab, handleTabChange, handleCheck, handleSubmit } = useNotebook();
-  const tabs = createTabsConfig(handleCheck, handleSubmit);
+  const tabs = createTabsConfig({onCheck: handleCheck, onSubmit: handleSubmit, onSetLevel: prop.setLevel} as TabsConfigEntry);
 
   return (
     <NotebookBackground>

@@ -172,7 +172,23 @@ export interface NotebookEntry {
   updatedAt: Date;
 }
 
+export interface TabsConfigEntry {
+  onCheck: () => void;
+  onSubmit: () => void;
+  onSetLevel: (level: string) => void;
+}
+
 export type NotebookEntryType = 'note' | 'question' | 'answer' | 'reflection';
+
+export interface JourneyIconEntry {
+  name: string;
+  type: JourneyIconType;
+  color?: 'blue' | 'red' | 'green' | 'yellow' | 'purple' | 'pink' | 'indigo' | 'gray' | 'orange' | 'teal';
+  size?: 'sm' | 'md' | 'lg';
+  onClick?: () => void; // Optional click handler for interactive icons
+}
+
+export type JourneyIconType = 'history' | 'biology' | 'science' | 'mystery' | 'goal' | 'magic' | 'nature' | 'space' | 'art';
 
 // ============================================================================
 // Dashboard & Analytics Types

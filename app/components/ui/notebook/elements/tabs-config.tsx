@@ -1,19 +1,20 @@
 import { NotesContent, TasksContent, IdeasContent } from './notebook-content';
+import { TabsConfigEntry } from '@/app/lib/types';
 // Import your actual JourneyMap component here
 import JourneyMap from '../journey-map';
 
-export const createTabsConfig = (onCheck: () => void, onSubmit: () => void) => [
+export const createTabsConfig = (props: TabsConfigEntry) => [
   {
     id: 0,
     label: "Notes",
     icon: "📝",
-    content: <NotesContent onCheck={onCheck} onSubmit={onSubmit} />
+    content: <NotesContent onCheck={props.onCheck} onSubmit={props.onSubmit} />
   },
   {
     id: 1,
     label: "Journey",
     icon: "🗺️",
-    content: <JourneyMap />
+    content: <JourneyMap onSetLevel={props.onSetLevel} />
   },
   {
     id: 2,

@@ -2,7 +2,7 @@ import React from 'react';
 
 const NotebookBackground = ({ children }: {children: React.ReactNode}) => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-200 p-8">
+    <div className="flex items-center justify-center min-h-screen h-3/4 p-8">
       <div className="relative">
         {/* Notebook Shadow */}
         <div className="absolute inset-0 bg-gray-400 rounded-lg transform translate-x-1 translate-y-1"></div>

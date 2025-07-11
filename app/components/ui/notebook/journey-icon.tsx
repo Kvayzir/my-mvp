@@ -1,94 +1,63 @@
-import { BookOpenIcon, BeakerIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { ReactNode } from 'react';
-
-const CircularButton = ({ 
-  color = 'blue', 
-  size = 'md', 
-  onClick, 
-  children, 
-  disabled = false 
-}: {
-    color?: 'blue' | 'red' | 'green' | 'yellow' | 'purple' | 'pink' | 'indigo' | 'gray' | 'orange' | 'teal',
-    size?: 'sm' | 'md' | 'lg' | 'xl',
-    onClick: () => void,
-    children: ReactNode,
-    disabled?: boolean
-}) => {
-  // Color mapping for different color variants
+import { JourneyIconEntry } from "@/app/lib/types";
+export default function JourneyIcon(props: JourneyIconEntry) {
   const colorClasses = {
-    blue: 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500',
-    red: 'bg-red-500 hover:bg-red-600 focus:ring-red-500',
-    green: 'bg-green-500 hover:bg-green-600 focus:ring-green-500',
-    yellow: 'bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-500',
-    purple: 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-500',
-    pink: 'bg-pink-500 hover:bg-pink-600 focus:ring-pink-500',
-    indigo: 'bg-indigo-500 hover:bg-indigo-600 focus:ring-indigo-500',
-    gray: 'bg-gray-500 hover:bg-gray-600 focus:ring-gray-500',
-    orange: 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-500',
-    teal: 'bg-teal-500 hover:bg-teal-600 focus:ring-teal-500',
+    blue: 'bg-blue-500 border-blue-300',
+    yellow: 'bg-yellow-500 border-yellow-300',
+    indigo: 'bg-indigo-500 border-indigo-300',
+    green: 'bg-green-500 border-green-300',
+    red: 'bg-red-500 border-red-300',
+    purple: 'bg-purple-500 border-purple-300',
+    pink: 'bg-pink-500 border-pink-300',
+    orange: 'bg-orange-500 border-orange-300',
+    gray: 'bg-orange-500 border-gray-300',
+    teal: 'bg-orange-500 border-teal-300',
   };
 
-  // Size mapping for different button sizes
   const sizeClasses = {
-    sm: 'w-8 h-8 text-xs',
-    md: 'w-12 h-12 text-sm',
-    lg: 'w-16 h-16 text-base',
-    xl: 'w-20 h-20 text-lg',
+    sm: 'w-12 h-12 text-xs',
+    md: 'w-16 h-16 text-sm',
+    lg: 'w-20 h-20 text-base',
   };
 
-  // Get the appropriate classes or fallback to blue
-  const colorClass = colorClasses[color] || colorClasses.blue;
-  const sizeClass = sizeClasses[size] || sizeClasses.md;
+  const typeIcons = {
+    history: '🏛️',
+    science: '🔬',
+    mystery: '🔍',
+    goal: '🎯',
+    magic: '✨',
+    nature: '🌿',
+    space: '🚀',
+    art: '🎨',
+    biology: '🐻‍❄️',
+  };
 
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        ${colorClass}
-        ${sizeClass}
-        rounded-full
-        text-white
-        font-medium
-        transition-all
-        duration-200
-        transform
-        hover:scale-105
-        active:scale-95
-        focus:outline-none
-        focus:ring-2
-        focus:ring-offset-2
-        disabled:opacity-50
-        disabled:cursor-not-allowed
-        disabled:hover:scale-100
-        shadow-md
-        hover:shadow-lg
-        flex
-        items-center
-        justify-center
-      `}
-    >
-      {children}
-    </button>
+    <div className={`flex flex-col items-center group cursor-pointer ${sizeClasses[props.size || "md"] || sizeClasses.md}`}>
+      <div 
+        className={`
+          ${colorClasses[props.color || "blue"] || colorClasses.blue}
+          ${sizeClasses[props.size || "md"] || sizeClasses.md}
+          rounded-full
+          border-4
+          flex items-center justify-center
+          shadow-lg
+          transition-all duration-300
+          hover:scale-110
+          hover:shadow-xl
+          bg-opacity-80
+          backdrop-blur-sm
+        `}
+        title={props.name}
+        onClick={props.onClick ? props.onClick : () => alert(`You clicked on ${props.name}`)}
+      >
+        <span className="text-white text-2xl">
+          {typeIcons[props.type] || '🎯'}
+        </span>
+      </div>
+      <span className="text-xs mt-2 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-2 whitespace-nowrap bg-white px-2 py-1 rounded shadow-md z-10">
+        {props.name}
+      </span>
+    </div>
   );
-};
-
-export default function JourneyIcon(prop: {name: string, type: 'history' | 'science' | 'mystery', color?: 'blue' | 'red' | 'green' | 'yellow' | 'purple' | 'pink' | 'indigo' | 'gray' | 'orange' | 'teal'}) {
-    const icon = {
-        'history': <BookOpenIcon className="w-6 h-6 text-gray-500" />,
-        'science': <BeakerIcon className="w-6 h-6 text-gray-500" />,
-        'mystery': <MagnifyingGlassIcon className="w-6 h-6 text-gray-500" />,
-    }
-    return (
-        <div className="w-[50px] h-[50px] r p-4 color-">   
-            {CircularButton({
-                color: prop.color || 'blue',
-                size: 'md',
-                onClick: () => console.log(`Clicked on ${prop.name}`),
-                children: icon[prop.type] || <MagnifyingGlassIcon className="w-6 h-6 text-gray-500" />,
-                disabled: false
-            })}
-        </div>
-    );
 }
 
