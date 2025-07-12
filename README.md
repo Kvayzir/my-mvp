@@ -34,3 +34,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## To-dos
+- Create a content preview component
+- Button for download pdf (and share)
+- Link content to chat
+- Limit send button to 20 messages
+- Create a 5-starts rating pop-up (if student rates 4 or 5, it receives 5 more messages)
+- GPT prompt to 
+    - ask for suggestions if the students is struggling to decide the next topic
+    - present the content considering lack of knowledge and tease other contents

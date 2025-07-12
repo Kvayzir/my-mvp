@@ -32,7 +32,8 @@ export default function JourneyMap(props: JourneyMapProps) {
         { name: "Célula Vegetal", type: "nature", color: "green", onClick: () => props.onSetLevel("cellVeg") } as JourneyIconEntry,
         { name: "Célula Animal", type: "biology", color: "pink", onClick: () => props.onSetLevel("cellAn") } as JourneyIconEntry,
         { name: "Energía", type: "magic", color: "orange", onClick: () => props.onSetLevel("energy") } as JourneyIconEntry,
-        { name: "Partes de la Célula", type: "mystery", color: "red", onClick: () => props.onSetLevel("parts") }   as JourneyIconEntry
+        { name: "Partes de la Célula", type: "mystery", color: "red", onClick: () => props.onSetLevel("parts") }   as JourneyIconEntry,
+        { name: "Trabajo", type: "art", color: "orange", onClick: () => props.onSetLevel("testing") }   as JourneyIconEntry,
       ]
     },
     // Second ring
@@ -42,6 +43,7 @@ export default function JourneyMap(props: JourneyMapProps) {
         { name: "History Journey", type: "history", color: "blue", onClick: () => props.onSetLevel("history") } as JourneyIconEntry,
         { name: "Science Journey", type: "science", color: "yellow", onClick: () => props.onSetLevel("science") } as JourneyIconEntry,
         { name: "Mystery Journey", type: "mystery", color: "indigo", onClick: () => props.onSetLevel("mystery") } as JourneyIconEntry,
+        { name: "Outerspace Journey", type: "space", color: "indigo", onClick: () => props.onSetLevel("mystery") } as JourneyIconEntry,
       ]
     }
   ];
