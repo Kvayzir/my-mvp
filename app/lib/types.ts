@@ -182,7 +182,16 @@ export interface TabsConfigEntry {
   onCheck: () => void;
   onSubmit: () => void;
   mapProps: JourneyMapProps;
+  tabStates: TabStates;
 }
+
+export type TabState =
+| JourneyTabState
+| { completed: boolean };
+
+export type TabStates = {
+  [key: number]: TabState;
+};
 
 export type NotebookEntryType = 'note' | 'question' | 'answer' | 'reflection';
 
@@ -199,9 +208,20 @@ export type JourneyIconType = 'history' | 'biology' | 'science' | 'mystery' | 'g
 export interface JourneyMapProps {
   onSetLevel: (level: string) => void;
   state: JourneyState; // Represents the current state of the notebook or journey
+  tabState?: JourneyTabState; // Optional for managing tab states
+  updateClickedSequence?: (sequence: PositionedJourneyIcon[]) => void; // Optional for updating clicked sequence
+  updateAllIconPositions?: (positions: PositionedJourneyIcon[]) => void; // Optional for
 }
 
 export type JourneyState = 'start' | 'in progress' | 'end' | 'complete';
+export type JourneyTabState = { clickedSequence: PositionedJourneyIcon[]; allIconPositions: PositionedJourneyIcon[] }
+
+export interface PositionedJourneyIcon extends JourneyIconEntry {
+  position: { x: number; y: number };
+  id: string;
+  ring: number;
+  itemIndex: number;
+}
 
 // ============================================================================
 // Dashboard & Analytics Types
