@@ -7,6 +7,17 @@ import { fetchChatReply } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
 import { ChatMessage, ChatProps, ChatReplyRequest } from '@/app/lib/types';
 
+const CONTENT = {
+    "Ciudad": "Imagina una ciudad en miniatura: hay una planta eléctrica (mitocondria), una oficina de correos (aparato de Golgi), fábricas (ribosomas), centros de reciclaje (lisosomas), calles (citoplasma) y, por supuesto, un ayuntamiento con los planos de construcción: el núcleo.",
+    "Secret": "Imaginen que están diseñando una base secreta en un videojuego. Necesitan un lugar donde se tomen decisiones (núcleo), máquinas que fabriquen cosas (ribosomas, RER), almacenes (vacuolas) y generadores de energía (mitocondrias). ¿Qué tan eficiente sería tu base? Vamos a descubrir cómo lo hace la naturaleza.",
+    "microscopio": "Hoy haremos un viaje microscópico dentro de una célula. Prepárate para flotar por el citoplasma, explorar estructuras llenas de energía y llegar al lugar más protegido de todos: el núcleo, donde se guardan los secretos de la vida.",
+    "core": "Cuando se mira una imagen de la célula, el núcleo es una de las partes más evidentes. Está en el centro de la célula, y contiene todos los cromosomas de la misma, los cuales codifican el material genético. Es, por lo tanto, una parte a proteger, es realmente importante para la célula. El núcleo tiene una membrana que lo rodea y que mantiene todos los cromosomas en el interior; y separa los cromosomas del interior del núcleo y el resto de los orgánulos y componentes de la célula que se quedan fuera. Algunas cosas, como el ARN, necesitan circular entre el núcleo y el citoplasma. Para ello, hay poros en esta envoltura nuclear que permiten que las moléculas entren y salgan del núcleo. Antes se pensaba que la membrana nuclear sólo permitía la salida de las moléculas, pero ahora se sabe que también hay un proceso activo para introducir moléculas en el núcleo",
+    "energy": "Aquí hablamos de mitocondrias, cloroplastos, lisosomas, y vacuolas",
+    "sustances": "Ribosomas, RER, REL, aparato de Golgi",
+    "citoesqueleto": "Citoesqueleto: microfilamentos, filamentos intermedios y microtúbulos. Estos son los componentes que dan forma a la célula, como si fueran los huesos y músculos de un cuerpo.",
+    "nucleo": "Forma, adn, genes, partes..."
+}
+
 export default function Chat(props: ChatProps) {
     // State to store all chat messages
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -78,7 +89,7 @@ export default function Chat(props: ChatProps) {
         // Only proceed if the level actually changed
         if (previousLevel.current !== props.level) {
             const handleLevelChange = async () => {
-                addMessage(`Iniciando ${props.level}`, 'system', true);
+                addMessage(`Contenido:\n ${CONTENT[props.level as keyof typeof CONTENT]}`, 'system', true);
                 const msg = `Ahora vamos a cambiar el nivel de dificultad a ${props.level}. Ajusta tu siguiente respuesta al nivel ${props.level} y continúa motivando al estudiante. Haz una pregunta apropiada para este nuevo nivel sobre el tema ${topic || 'Introducción a la investigación'}.`;
                 addMessage(msg, 'bot', false);
             };

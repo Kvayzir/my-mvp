@@ -28,7 +28,7 @@ export const JourneyIconWrapper: React.FC<JourneyIconWrapperProps> = ({
       <div className={`${isClicked ? 'ring-2 ring-blue-400 ring-opacity-75 rounded-full' : ''}`}>
         <JourneyIcon
           name={item.name}
-          type={item.type}
+          icon={item.icon}
           color={item.color}
           size={item.size || 'md'}
           onClick={onClick}

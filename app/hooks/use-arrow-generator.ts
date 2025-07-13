@@ -89,17 +89,19 @@ export const useArrowGenerator = (allIconPositions: PositionedJourneyIcon[]) => 
     let controlX, controlY;
     
     if (curveRequired) {
+      console.log("Using curve for arrow");
       const midX = (start.x + end.x) / 2;
       const midY = (start.y + end.y) / 2;
       const vectorX = midX - CENTER_POINT.x;
       const vectorY = midY - CENTER_POINT.y;
+      console.log("Vector X:", vectorX, "Vector Y:", vectorY);
       const vectorMagnitude = Math.sqrt(vectorX * vectorX + vectorY * vectorY);
       
       const curveOffsetFactor = Math.max(distance * 0.1, CURVE_OFFSET);
       
       if (vectorMagnitude > 0) {
-        controlX = CENTER_POINT.x + (vectorX / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
-        controlY = CENTER_POINT.y + (vectorY / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
+        controlX = CENTER_POINT.x + ((Math.abs(vectorX) > 5 ? vectorX : distance * 0.3) / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
+        controlY = CENTER_POINT.y + ((Math.abs(vectorY) > 5 ? vectorY : distance * 0.3) / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
       } else {
         controlX = midX + Math.cos(angle + Math.PI / 2) * curveOffsetFactor;
         controlY = midY + Math.sin(angle + Math.PI / 2) * curveOffsetFactor;

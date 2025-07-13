@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 export function NotesContent({ onCheck, onSubmit }: {onCheck: () => void, onSubmit: () => void}){
     return (
@@ -60,6 +61,23 @@ export function TasksContent(){
                     <input type="checkbox" className="w-5 h-5 text-blue-500" />
                     <span className="text-gray-700">Enviar reporte</span>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+export function Resources(){
+    return (
+        <div className="p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-6 text-center">Recursos</h2>
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-gray-800">Citoesqueleto</h3>
+                <Image
+                    src="/images/content/Citoesqueleto.png"
+                    alt="Citoesqueleto"
+                    width={300}
+                    height={300}
+                />
             </div>
         </div>
     );

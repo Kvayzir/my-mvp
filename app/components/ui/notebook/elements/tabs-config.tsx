@@ -1,4 +1,4 @@
-import { NotesContent, TasksContent, IdeasContent } from './notebook-content';
+import { NotesContent, TasksContent, Resources, IdeasContent } from './notebook-content';
 import { TabsConfigEntry, JourneyTabState } from '@/app/lib/types';
 import JourneyMap from '@/app/components/ui/journey-map/journey-map';
 
@@ -23,12 +23,18 @@ export const createTabsConfig = (props: TabsConfigEntry) => [
   },
   {
     id: 2,
+    label: "Recursos",
+    icon: "📚",
+    content: <Resources />
+  },
+  {
+    id: 3,
     label: "Report",
     icon: "📝",
     content: <NotesContent onCheck={props.onCheck} onSubmit={props.onSubmit} />
   },
   {
-    id: 3,
+    id: 4,
     label: "Ideas",
     icon: "💡",
     content: <IdeasContent />

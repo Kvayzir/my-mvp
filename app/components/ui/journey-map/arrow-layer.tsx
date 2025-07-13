@@ -21,6 +21,7 @@ export const ArrowLayer: React.FC<ArrowLayerProps> = ({
         
         const prevIcon = clickedSequence[index - 1];
         const { arrowPath, arrowhead } = createArrow(prevIcon, icon);
+        console.log("Arrow Path:", arrowPath);
         const numberPosition = getArrowStartPosition(prevIcon.position, icon.position);
         
         if (!arrowPath || !arrowhead) return null;

@@ -19,18 +19,6 @@ export default function JourneyIcon(props: JourneyIconEntry) {
     lg: 'w-20 h-20 text-base',
   };
 
-  const typeIcons = {
-    history: '🏛️',
-    science: '🔬',
-    mystery: '🔍',
-    goal: '🎯',
-    magic: '✨',
-    nature: '🌿',
-    space: '🚀',
-    art: '🎨',
-    biology: '🐻‍❄️',
-  };
-
   return (
     <div className={`flex flex-col items-center group cursor-pointer ${sizeClasses[props.size || "md"] || sizeClasses.md}`}>
       <div 
@@ -51,7 +39,7 @@ export default function JourneyIcon(props: JourneyIconEntry) {
         onClick={props.onClick ? props.onClick : () => alert(`You clicked on ${props.name}`)}
       >
         <span className="text-white text-2xl">
-          {typeIcons[props.type] || '🎯'}
+          {props.icon || "❓"}
         </span>
       </div>
       <span className="text-xs mt-2 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-2 whitespace-nowrap bg-white px-2 py-1 rounded shadow-md z-10">

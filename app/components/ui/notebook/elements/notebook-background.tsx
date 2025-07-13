@@ -8,7 +8,7 @@ const NotebookBackground = ({ children }: {children: React.ReactNode}) => {
         <div className="absolute inset-0 bg-gray-400 rounded-lg transform translate-x-1 translate-y-1"></div>
         
         {/* Main Notebook */}
-        <div className="relative bg-white rounded-lg shadow-2xl overflow-hidden" style={{ width: '800px', height: '600px' }}>
+        <div className="relative bg-white rounded-lg shadow-2xl overflow-hidden" style={{ width: '600px', height: '600px' }}>
           {/* Notebook Binding */}
           <div className="absolute left-0 top-0 bottom-0 w-12 bg-red-600 shadow-inner">
             <div className="h-full flex flex-col justify-evenly items-center">

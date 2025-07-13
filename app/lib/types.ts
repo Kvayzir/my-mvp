@@ -197,7 +197,7 @@ export type NotebookEntryType = 'note' | 'question' | 'answer' | 'reflection';
 
 export interface JourneyIconEntry {
   name: string;
-  type: JourneyIconType;
+  icon: string;
   color?: 'blue' | 'red' | 'green' | 'yellow' | 'purple' | 'pink' | 'indigo' | 'gray' | 'orange' | 'teal';
   size?: 'sm' | 'md' | 'lg';
   onClick?: () => void; // Optional click handler for interactive icons
