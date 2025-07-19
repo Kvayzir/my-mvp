@@ -4,10 +4,10 @@ Server module handling chat operations, history management, and statistics.
 import time
 import os
 from typing import List, Dict, Any
-from scripts.chatbot import ChatBot
+from scripts.chats.chatbot import ChatBot
 from utils.messages import UserRegistration, TopicMessage, ChatMessage, ChatResponse
-from .database import DatabaseManager
-from .chatManager import ChatMemoryManager
+from .databases.database import DatabaseManager
+from .chats.chatManager import ChatMemoryManager
 
 class ChatServer:
     """Manages chat sessions, history, and server operations."""
