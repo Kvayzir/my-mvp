@@ -100,11 +100,11 @@ export const useArrowGenerator = (allIconPositions: PositionedJourneyIcon[]) => 
       const curveOffsetFactor = Math.max(distance * 0.1, CURVE_OFFSET);
       
       if (vectorMagnitude > 0) {
-        controlX = CENTER_POINT.x + ((Math.abs(vectorX) > 5 ? vectorX : distance * 0.3) / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
-        controlY = CENTER_POINT.y + ((Math.abs(vectorY) > 5 ? vectorY : distance * 0.3) / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
+        controlX = CENTER_POINT.x + ((Math.abs(vectorX) > 5 ? vectorX : distance * 0.25) / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
+        controlY = CENTER_POINT.y + ((Math.abs(vectorY) > 5 ? vectorY : distance * 0.25) / vectorMagnitude) * (vectorMagnitude + curveOffsetFactor * EXTEND_FACTOR);
       } else {
-        controlX = midX + Math.cos(angle + Math.PI / 2) * curveOffsetFactor;
-        controlY = midY + Math.sin(angle + Math.PI / 2) * curveOffsetFactor;
+        controlX = midX + Math.cos(angle + Math.PI / 2) * curveOffsetFactor * 4;
+        controlY = midY + Math.sin(angle + Math.PI / 2) * curveOffsetFactor * 4;
       }
     } else {
       controlX = (start.x + end.x) / 2;
