@@ -9,7 +9,8 @@ from utils.messages import (
     ChatMessage,
     ChatResponse,
     TopicMessage,
-    ChatHistoryLoad
+    ChatHistoryLoad,
+    ConversationUpdate
 )
 
 # Load environment variables from .env file
@@ -83,8 +84,9 @@ async def chat_load_endpoint(
 
     return ChatHistoryLoad(msgList=msgList)
     
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/conversations/{conversation_id}/messages", response_model=ChatResponse)
 async def chat_endpoint(
+    conversation_id: str,
     chat_message: ChatMessage,
     chat_server: ChatServer = Depends(get_chat_server)
 ):
@@ -98,8 +100,9 @@ async def chat_endpoint(
         
         # Process message through chat server
         print(f"Processing chat message: {chat_message}\n\n")
+        user_id, theme = conversation_id.split("_", 1)
         try:
-            bot_response = await chat_server.process_message(chat_message)
+            bot_response = await chat_server.process_message(user_id, theme, chat_message)
         except Exception as e:
             print(f"❌ Error processing message: {e}")
             raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
@@ -115,6 +118,17 @@ async def chat_endpoint(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
+
+@app.patch("/conversations/{conversation_id}")
+async def update_conversation_state(conversation_id: str, update_data: ConversationUpdate,
+    chat_server: ChatServer = Depends(get_chat_server)):
+    """
+    Updates the state of a conversation, like setting the active topic from a clicked icon.
+    """
+    user_id, theme = conversation_id.split("_", 1)
+    if await chat_server.patch_conversation(user_id, theme, update_data.active_icon_content):
+        return {"status": "success", "message": "Conversation context updated."}
+    raise HTTPException(status_code=500)
 
 @app.post("/topics/create")
 async def topic_endpoint(

@@ -86,7 +86,25 @@ class ChatServer:
             # Fallback to in-memory storage
             return self.memory_manager.get_conversation(user_id, topic).get_context()
 
-    async def process_message(self, message: ChatMessage) -> str:
+    async def patch_conversation(self, user_id: str, theme: str, icon_content: str) -> None:
+        """
+        Update the conversation state based on an icon click.
+        
+        Args:
+            user_id: Unique identifier for the user
+            theme: Topic of the conversation
+            icon_content: Content associated with the clicked icon
+        """
+        try:
+            conversation = await self.memory_manager.get_conversation(user_id, theme)
+            conversation.handle_icon_click(icon_content)
+            print(f"Updated conversation for user {user_id} with theme {theme} to focus on: {icon_content}")
+            return True
+        except Exception as e:
+            print(f"❌ Error updating conversation: {e}")
+            return False
+
+    async def process_message(self, user_id: str, theme: str, message: ChatMessage) -> str:
         """
         Process a user message and generate a response.
         
@@ -100,21 +118,21 @@ class ChatServer:
         """
         start_time = time.time()
         try:
-            is_idempotent = self.memory_manager.check_idempotency(message.user_id, message.topic, message.msg)
+            is_idempotent = self.memory_manager.check_idempotency(user_id, theme, message.msg)
         except Exception as e:
             print(f"❌ Error checking idempotency: {e}")
             is_idempotent = False
         if is_idempotent:
             print("🔁 Idempotent message detected, skipping processing")
-            return self.memory_manager.idempotency_response(message.user_id, message.topic)
+            return self.memory_manager.idempotency_response(user_id, theme)
         # Get conversation context from memory
-        conversation = await self.memory_manager.get_conversation(message.user_id, message.topic)
+        conversation = await self.memory_manager.get_conversation(user_id, theme)
         await conversation.add_message(message.msg, sender="user")
         # Generate response (your AI logic here)
         response = self.chatBot.generate_response(conversation.get_context())
         
         # Save message 
-        await self.memory_manager.save_and_cache_message(message, response, time.time() - start_time)
+        await self.memory_manager.save_and_cache_message(user_id, theme, message, response, time.time() - start_time)
         print(f"🤖 Bot response: {response}")
         return response
         

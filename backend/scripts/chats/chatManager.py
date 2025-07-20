@@ -1,65 +1,14 @@
 import time
-from typing import Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
-from utils.messages import SimpleChatMessage, ChatMessage
+from typing import Dict, Tuple
+from .conversation import Conversation
+from utils.messages import ChatMessage
 
-
-class Conversation:
-    def __init__(self, user_id: str, initial_messages: List[SimpleChatMessage] = None):
-        self._cache_dirty = True
-        self._cache = {}
-        self.user_id = user_id
-        self.messages: List[SimpleChatMessage] = initial_messages or []
-        self.last_activity = time.time()
-        self.max_messages = 20  # Keep last 20 messages in memory
-
-    def __repr__(self):
-        dialogue = "\n".join(
-            f"{msg.sender}: {msg.content} ({datetime.fromtimestamp(msg.timestamp)})"
-            for msg in self.messages
-        )
-        return f"Dialogue History of {self.user_id}\n" + dialogue or "No messages in conversation"
-    
-    async def add_message(self, content: str, sender: str):
-        """Add message to conversation and maintain size limit"""
-        print(f"📝 Added message from {sender}: {content}")
-        message = SimpleChatMessage(content, sender, time.time())
-        self.messages.append(message)
-        self._cache_dirty = True
-        self.last_activity = time.time()
-        # Keep only recent messages in memory
-        if len(self.messages) > self.max_messages:
-            self.messages = self.messages[-self.max_messages:]
-    
-    def get_context(self, max_messages: int = 20) -> List[Dict[str, str]]:
-        """Optimized context retrieval with caching"""
-        cache_key = f"context_{max_messages}"
-        
-        if not self._cache_dirty and cache_key in self._cache:
-            return self._cache[cache_key]
-        
-        if not self.messages or max_messages <= 0:
-            result = []
-        else:
-            recent_messages = self.messages[-max_messages:]
-            result = [
-                {
-                    "role": "assistant" if msg.sender == "bot" else msg.sender,
-                    "content": msg.content
-                }
-                for msg in recent_messages
-            ]
-
-        self._cache[cache_key] = result
-        self._cache_dirty = False
-        
-        return result
-    
-    def is_expired(self, timeout_seconds: int = 1800) -> bool:
-        """Check if conversation has been inactive too long"""
-        return time.time() - self.last_activity > timeout_seconds
 
 class ChatMemoryManager:
+    """
+    Manages multiple active conversations, handling their creation, retrieval,
+    and storage.
+    """
     def __init__(self, database, max_memory_conversations: int = 1000):
         self.database = database
         self.active_conversations: Dict[Tuple[str, str], Conversation] = {}
@@ -101,13 +50,13 @@ class ChatMemoryManager:
         await self._add_to_memory(user_id, theme, conversation)
         return conversation
     
-    async def save_and_cache_message(self, msg: ChatMessage, response: str, response_time_ms: int):
+    async def save_and_cache_message(self, user_id: str, theme: str, msg: ChatMessage, response: str, response_time_ms: int):
         """Save message to database and update memory cache"""
         
         # Save to database first (WIP)
         message = {
-            "user_id": msg.user_id or "anonymous",
-            "theme": msg.topic or "default",
+            "user_id": user_id or "anonymous",
+            "theme": theme or "default",
             "message": msg.msg,
             "response": response,
             "response_time_ms": response_time_ms,

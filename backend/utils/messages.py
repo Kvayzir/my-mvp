@@ -13,11 +13,12 @@ class UserRegistration(BaseModel):
     user_id: str
     classroom: Optional[str] = "null"
 
+class ConversationUpdate(BaseModel):
+    active_icon_content: str
+
 class ChatMessage(BaseModel):
     id: int
     msg: str
-    user_id: Optional[str] = "anonymous"
-    topic: Optional[str] = "default"
 
 class ChatHistoryLoad(BaseModel):
     msgList: list[SimpleChatMessage]
