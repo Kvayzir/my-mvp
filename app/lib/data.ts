@@ -35,12 +35,12 @@ export async function fetchChatLoad({user, topic}: {user: string, topic: string}
 
 export async function fetchChatReply(request: ChatReplyRequest) {
   try {
-    const response = await fetch('http://localhost:8000/chat', { //   https://my-mvp-production-4b5f.up.railway.app/chat
+    const response = await fetch(`http://localhost:8000/conversations/${request.user_id}_${request.topic}/messages`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(request)
+        body: JSON.stringify({id: request.id, msg: request.msg}),
     });
     
     console.log('Chat message:', request);
@@ -50,5 +50,25 @@ export async function fetchChatReply(request: ChatReplyRequest) {
   } catch (error) {
     console.error('Error initializing chat:', error);
     return `Welcome to the chat about ${request.topic}!`;
+  }
+}
+
+export async function patchChatConversation(request: ChatReplyRequest, content: string) {
+  try {
+    const response = await fetch(`http://localhost:8000/conversations/${request.user_id}_${request.topic}`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({active_icon_content: content}),
+    });
+    
+    console.log('Chat message:', content);
+    const data = await response.json();
+    console.log('Chat response:', data.response);
+    return data;
+  } catch (error) {
+    console.error('Error initializing chat:', error);
+    return `${content}!`;
   }
 }

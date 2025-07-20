@@ -3,7 +3,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
-import { fetchChatReply } from '@/app/lib/data';
+import { fetchChatReply, patchChatConversation } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
 import { ChatMessage, ChatProps, ChatReplyRequest } from '@/app/lib/types';
 
@@ -152,6 +152,14 @@ function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUp
         const fetchReply = async () => {
             if (chatMessage.user_type === 'system'){
                 console.log('System message, skipping reply fetch');
+                const request = {
+                    id: chatMessage.id, 
+                    user_id: userId, 
+                    topic, 
+                    msg: chatMessage.text 
+                } as ChatReplyRequest;
+                const reply = await patchChatConversation(request, content);
+                console.log('System message reply:', reply);
                 return;
             }
             if (chatMessage.parsed || chatMessage.user_type !== 'bot') {
