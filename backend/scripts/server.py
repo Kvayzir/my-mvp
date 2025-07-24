@@ -59,10 +59,12 @@ class ChatServer:
         )
         print(f"Topic '{topic.name}' created (not implemented in this example).")
 
-    def get_topics(self) -> TopicMessage:
+    def get_topics(self, user_id=None) -> TopicMessage:
         """
         Retrieve all topics available in the chat system.
         """
+        if user_id is None:
+            return self.db_manager.get_topics()
         return self.db_manager.get_topics()
 
     def load_chat(self, user_id: str, topic: str) -> List[Dict[str, Any]]:
