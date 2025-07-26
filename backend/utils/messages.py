@@ -34,6 +34,20 @@ class TopicMessage(BaseModel):
     instructions: str
     content: str
 
+class ContentItem(BaseModel):
+    level: int
+    title: str
+    icon: str
+    color: str
+    description: str
+    material: Optional[str] = "En desarrollo"
+    references: Optional[List[dict]] = None
+
+class TopicContent(BaseModel):
+    name: str
+    description: str
+    contents: List[ContentItem]
+
 # Additional models you might need in the future
 class HealthStatus(BaseModel):
     status: str

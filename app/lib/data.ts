@@ -72,3 +72,21 @@ export async function patchChatConversation(request: ChatReplyRequest, content: 
     return `${content}!`;
   }
 }
+
+export async function fetchTopicContent(topic: string) {
+  try {
+    const response = await fetch(`http://localhost:8000/topics/${topic}`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    
+    const data = await response.json();
+    console.log('Topic content:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching topic content:', error);
+    throw new Error('Failed to fetch topic content.');
+  }
+}

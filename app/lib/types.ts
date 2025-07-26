@@ -52,6 +52,22 @@ export interface ContentPreviewProps {
   description: string;
 }
 
+export interface Content {
+  level: string;
+  title: string;
+  icon: string;
+  color: string
+  description: string;
+  material: string;
+  references?: string[];
+}
+
+export interface TopicResponse {
+  name: string;
+  description: string;
+  contents: Content[];
+}
+
 // ============================================================================
 // Assignment & Topic Types
 // ============================================================================
