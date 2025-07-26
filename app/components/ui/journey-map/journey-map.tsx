@@ -116,7 +116,7 @@ export default function JourneyMap(props: JourneyMapProps) {
                   position={relativePos}
                   isVisible={isVisible}
                   isClicked={isClicked}
-                  onClick={() => props.handleIconClick ? props.handleIconClick(positionedIcon, ringData.ring, index) : console.log("handleIconClick not provided")}
+                  onClick={() => props.handleIconClick ? props.handleIconClick(positionedIcon, ringData.ring, index) : positionedIcon.onClick ? positionedIcon.onClick() : console.log("handleIconClick not provided")}
                 />
               );
             })}

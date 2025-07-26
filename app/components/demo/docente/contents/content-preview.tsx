@@ -2,11 +2,13 @@
 
 import {ContentPreviewProps} from '@/app/lib/types';
 import { useState, useRef, useCallback  } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ContentPreview(props: ContentPreviewProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
 
     // Callback for mouse movement to update cursor position relative to the container
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -47,6 +49,13 @@ export default function ContentPreview(props: ContentPreviewProps) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onMouseMove={handleMouseMove}
+            onClick={() => {
+                const params = new URLSearchParams();
+                params.append('title', props.title);
+                
+                // Navigate to the new page with the title as a query parameter
+                router.push(`/demo/docente/contents/content-manager?${params.toString()}`);
+            }}
       >
             <h2 className="text-xl font-semibold mb-2">{props.title}</h2>
             {/* Hidden Description Popup */}
