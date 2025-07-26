@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Suspense } from 'react';
 import { fetchChatReply, patchChatConversation } from '@/app/lib/data';
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
-import { ChatMessage, ChatProps, ChatReplyRequest } from '@/app/lib/types';
+import { ChatMessage, ChatProps, ChatReplyRequest, JourneyState } from '@/app/lib/types';
 
 const CONTENT = {
     "Ciudad": "",
@@ -103,13 +103,13 @@ export default function Chat(props: ChatProps) {
         <div className="max-w-2xl mx-auto p-4">
             <h2 className="text-xl font-semibold mb-4">{props.title}</h2>
             <h3 className="text-xl font-semibold mb-4">{props.level}</h3>
-            <Viewer messages={messages} onUpdateMessage={updateLastMessage} />
+            <Viewer messages={messages} onUpdateMessage={updateLastMessage} onUpdateState={props.onSetChatState} />
             <Input onSendMessage={addMessage} />
         </div>
     );
 }
 
-function Viewer({messages, onUpdateMessage}: { messages: ChatMessage[], onUpdateMessage: (text: string) => void }) {
+function Viewer({messages, onUpdateMessage, onUpdateState}: { messages: ChatMessage[], onUpdateMessage: (text: string) => void, onUpdateState: (state: JourneyState) => void}) {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     // Scroll to the bottom whenever messages update
@@ -129,7 +129,8 @@ function Viewer({messages, onUpdateMessage}: { messages: ChatMessage[], onUpdate
                         <Suspense key={message.id} fallback={<MessageSkeleton />}>
                             <Message 
                                 chatMessage={message} 
-                                onUpdateMessage={onUpdateMessage} 
+                                onUpdateMessage={onUpdateMessage}
+                                onUpdateState={onUpdateState} 
                             />
                         </Suspense>
                     ))
@@ -140,7 +141,7 @@ function Viewer({messages, onUpdateMessage}: { messages: ChatMessage[], onUpdate
     );
 }
 
-function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUpdateMessage: (text: string) => void}) {
+function Message({chatMessage, onUpdateMessage, onUpdateState}: {chatMessage: ChatMessage, onUpdateMessage: (text: string) => void, onUpdateState: (state: JourneyState) => void}) {
     const [isLoading, setIsLoading] = useState(!chatMessage.parsed);
     const [counter, setCounter] = useState(0);
     const [content, setContent] = useState(chatMessage.parsed ? chatMessage.text : '');
@@ -173,10 +174,13 @@ function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUp
                     topic, 
                     msg: chatMessage.text 
                 } as ChatReplyRequest;
-                const reply = await fetchChatReply(request);
+                const response = await fetchChatReply(request);
                 setCounter(prev => prev + 1);
-                onUpdateMessage(reply);
-                setContent(reply);
+                onUpdateMessage(response.reply);
+                setContent(response.reply);
+                if (response.complete) {
+                    onUpdateState('end');
+                }
             } catch (error) {
                 setContent('Error loading message...'+error);
             } finally {
@@ -185,7 +189,7 @@ function Message({chatMessage, onUpdateMessage}: {chatMessage: ChatMessage, onUp
         };
 
         fetchReply();
-    }, [chatMessage, topic, onUpdateMessage, userId]);
+    }, [chatMessage, topic, onUpdateMessage, userId, content]);
 
     if (isLoading) {
         return <MessageSkeleton />;

@@ -46,10 +46,10 @@ export async function fetchChatReply(request: ChatReplyRequest) {
     console.log('Chat message:', request);
     const data = await response.json();
     console.log('Chat response:', data.response);
-    return data.response;
+    return {reply: data.response, complete: data.complete};
   } catch (error) {
     console.error('Error initializing chat:', error);
-    return `Welcome to the chat about ${request.topic}!`;
+    return {reply: `Welcome to the chat about ${request.topic}!`, complete: false};
   }
 }
 

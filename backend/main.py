@@ -157,23 +157,21 @@ async def post_message_to_conversation(
     """Sends a message to a conversation and gets an AI response."""
     if not chat_message.msg.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
+    
+    print(f"Received message for conversation {conversation_id}: {chat_message.msg}")
     start_time = time.time()
     try:
         user_id, topic = conversation_id.split("_", 1)
-        
-        # Ensure the user_id from the path matches the one in the message body
-        if user_id != chat_message.user_id:
-            raise HTTPException(status_code=400, detail="Path user_id does not match message user_id")
             
-        bot_response = await chat_server.process_message(user_id, topic, chat_message)
+        bot_response, counter = await chat_server.process_message(user_id, topic, chat_message)
         
         response_time = int((time.time() - start_time) * 1000)
         
         return ChatResponse(
             response=bot_response,
             timestamp=time.time(),
-            response_time_ms=response_time
+            response_time_ms=response_time,
+            complete=int(counter) > 10
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid conversation_id format. Expected 'user_id_topic'.")

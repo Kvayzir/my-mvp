@@ -29,7 +29,8 @@ class ChatMemoryManager:
         return False
     
     def idempotency_response(self, user_id: str, theme: str):
-        return self.active_conversations[(user_id, theme)].get_context()[-1]["content"]
+        cache_context = self.active_conversations[(user_id, theme)].get_context()
+        return cache_context[-1]["content"], len(cache_context)
 
     
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
@@ -65,7 +66,7 @@ class ChatMemoryManager:
         print("💾 Saved message to database")
         # Update memory cache
         try:
-            await self.active_conversations[(msg.user_id, msg.topic)].add_message(response, "bot")
+            await self.active_conversations[(user_id, theme)].add_message(response, "bot")
         except KeyError:
             print(f"❌ No active conversation found for user {msg.user_id} with theme")
         except Exception as e:

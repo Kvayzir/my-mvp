@@ -27,6 +27,7 @@ class ChatResponse(BaseModel):
     response: str
     timestamp: float
     response_time_ms: int
+    complete: bool 
 
 class TopicMessage(BaseModel):
     subject: str

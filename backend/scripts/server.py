@@ -131,12 +131,13 @@ class ChatServer:
         conversation = await self.memory_manager.get_conversation(user_id, theme)
         await conversation.add_message(message.msg, sender="user")
         # Generate response (your AI logic here)
-        response = self.chatBot.generate_response(conversation.get_context())
+        context = conversation.get_context()
+        response = self.chatBot.generate_response(context)
         
         # Save message 
         await self.memory_manager.save_and_cache_message(user_id, theme, message, response, time.time() - start_time)
         print(f"🤖 Bot response: {response}")
-        return response
+        return response, len(context)
         
     def _get_recent_history_from_db(self, user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent chat history from database for a specific user"""
