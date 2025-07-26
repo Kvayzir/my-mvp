@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from "react";
 import { JourneyMapProps, PositionedJourneyIcon } from "@/app/lib/types";
-import { useArrowGenerator } from "@/app/hooks/use-arrow-generator";
 import { 
   getCircularPosition, 
   getAbsolutePosition 
@@ -12,19 +11,10 @@ import {
 } from "@/app/lib/constants/journey-map-constants";
 import { RingBackground } from "./ring-background";
 import { JourneyIconWrapper } from "./journey-icon-wrapper";
-import { ArrowLayer } from "./arrow-layer";
 import { MapLegend } from "./map-legend";
-import { ResetButton } from "./reset-button";
 
 export default function JourneyMap(props: JourneyMapProps) {
-  if (!props.tabState || !props.updateClickedSequence || !props.updateAllIconPositions) {
-    throw new Error("JourneyMap requires tabState and update functions to be provided.");
-  }
-  const { clickedSequence, allIconPositions } = props.tabState;
-  const setClickedSequence = props.updateClickedSequence;
-  const setAllIconPositions = props.updateAllIconPositions;
-  
-  const { createArrow, getArrowStartPosition } = useArrowGenerator(allIconPositions);
+  const setAllIconPositions = props.updateAllIconPositions ? props.updateAllIconPositions : () => {};
 
   // Calculate and store all icon positions once on mount
   useEffect(() => {
@@ -38,7 +28,7 @@ export default function JourneyMap(props: JourneyMapProps) {
         
         positions.push({
           ...item,
-          onClick: () => props.onSetLevel(item.level),
+          onClick: () => props.onSetLevel ? props.onSetLevel(item.level) : console.log("onSetLevel not provided"),
           position: absolutePos,
           id: `${ringData.ring}-${index}`,
           ring: ringData.ring,
@@ -49,23 +39,6 @@ export default function JourneyMap(props: JourneyMapProps) {
     
     setAllIconPositions(positions);
   }, [props.onSetLevel]);
-
-  const handleIconClick = useCallback((
-    item: PositionedJourneyIcon,
-    ringIndex: number,
-    itemIndex: number
-  ) => {
-    const iconId = `${ringIndex}-${itemIndex}`;
-    
-    const isAlreadyClicked = clickedSequence.some(clicked => clicked.id === iconId)
-    if (!isAlreadyClicked) {
-      setClickedSequence([...clickedSequence, item])
-    }
-
-    if (item.onClick) {
-      item.onClick();
-    }
-  }, [clickedSequence, setClickedSequence]);
 
   const isRingVisible = useCallback((ring: number) => {
     switch (props.state) {
@@ -79,10 +52,6 @@ export default function JourneyMap(props: JourneyMapProps) {
         return false;
     }
   }, [props.state]);
-
-  const resetArrows = useCallback(() => {
-    setClickedSequence([]);
-  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full p-6 bg-transparent">
@@ -111,7 +80,7 @@ export default function JourneyMap(props: JourneyMapProps) {
               const absolutePos = getAbsolutePosition(relativePos);
               
               const isVisible = isRingVisible(ringData.ring);
-              const isClicked = clickedSequence.some(clicked => clicked.id === `${ringData.ring}-${index}`);
+              const isClicked = props.clickedSequence ? props.clickedSequence.some(clicked => clicked.id === `${ringData.ring}-${index}`): true;
               
               // Special handling for Ring 0 (Goal)
               if (ringData.ring === 0 && props.state !== 'end') {
@@ -133,7 +102,7 @@ export default function JourneyMap(props: JourneyMapProps) {
 
               const positionedIcon: PositionedJourneyIcon = {
                 ...item,
-                onClick: () => props.onSetLevel(item.level),
+                onClick: () => props.onSetLevel ? props.onSetLevel(item.level) : console.log("onSetLevel not provided"),
                 position: absolutePos,
                 id: `${ringData.ring}-${index}`,
                 ring: ringData.ring,
@@ -147,7 +116,7 @@ export default function JourneyMap(props: JourneyMapProps) {
                   position={relativePos}
                   isVisible={isVisible}
                   isClicked={isClicked}
-                  onClick={() => handleIconClick(positionedIcon, ringData.ring, index)}
+                  onClick={() => props.handleIconClick ? props.handleIconClick(positionedIcon, ringData.ring, index) : console.log("handleIconClick not provided")}
                 />
               );
             })}
@@ -158,18 +127,10 @@ export default function JourneyMap(props: JourneyMapProps) {
         <div className="absolute inset-0 rounded-full bg-gradient-radial from-indigo-100 via-transparent to-transparent opacity-20 pointer-events-none" />
 
         {/* Arrow Layer */}
-        <ArrowLayer
-          clickedSequence={clickedSequence}
-          createArrow={createArrow}
-          getArrowStartPosition={getArrowStartPosition}
-        />
+        {props.children ? props.children() : null}
       </div>
 
       <MapLegend />
-      <ResetButton 
-        onReset={resetArrows}
-        clickedCount={clickedSequence.length}
-      />
     </div>
   );
 }

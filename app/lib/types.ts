@@ -43,6 +43,16 @@ export interface ChatProps {
 }
 
 // ============================================================================
+// Content Types
+// ============================================================================
+
+export interface ContentPreviewProps {
+  key: number
+  title: string;
+  description: string;
+}
+
+// ============================================================================
 // Assignment & Topic Types
 // ============================================================================
 
@@ -206,10 +216,11 @@ export interface JourneyIconEntry {
 export type JourneyIconType = 'history' | 'biology' | 'science' | 'mystery' | 'goal' | 'magic' | 'nature' | 'space' | 'art';
 
 export interface JourneyMapProps {
-  onSetLevel: (level: string) => void;
   state: JourneyState; // Represents the current state of the notebook or journey
-  tabState?: JourneyTabState; // Optional for managing tab states
-  updateClickedSequence?: (sequence: PositionedJourneyIcon[]) => void; // Optional for updating clicked sequence
+  onSetLevel?: (level: string) => void;
+  clickedSequence?: PositionedJourneyIcon[]; // Optional for tracking clicked icons
+  children?: () => React.JSX.Element; // Optional for rendering children components
+  handleIconClick?: (icon: PositionedJourneyIcon, ringIndex: number, itemIndex: number) => void; // Optional for updating clicked sequence
   updateAllIconPositions?: (positions: PositionedJourneyIcon[]) => void; // Optional for
 }
 

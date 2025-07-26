@@ -7,11 +7,11 @@ import { createTabsConfig } from './elements/tabs-config';
 import { TabsConfigEntry, JourneyMapProps } from '@/app/lib/types';
 
 const Notebook = (props: JourneyMapProps) => {
-  const { activeTab, tabStates, updateClickedSequence, updateAllIconPositions, handleTabChange, handleCheck, handleSubmit } = useNotebook();
+  const { activeTab, tabStates, clickedSequence, handleIconClick, ArrowMapping, updateAllIconPositions, handleTabChange, handleCheck, handleSubmit } = useNotebook();
   const tabs = createTabsConfig({
     onCheck: handleCheck, 
     onSubmit: handleSubmit, 
-    mapProps: {...props, updateClickedSequence, updateAllIconPositions},
+    mapProps: {...props, clickedSequence, handleIconClick, updateAllIconPositions, children: ArrowMapping},
     tabStates: tabStates,
   } as TabsConfigEntry);
 

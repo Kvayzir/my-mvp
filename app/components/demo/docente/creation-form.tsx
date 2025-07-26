@@ -31,7 +31,7 @@ export default function CreationForm() {
         // Here you would typically send the data to your backend API
         console.log("Creating topic:", topic);
         $.ajax({
-        url: 'http://localhost:8000/topics/create', // Replace with your backend endpoint
+        url: 'http://localhost:8000/topics', // Replace with your backend endpoint
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(topic),

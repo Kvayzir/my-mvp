@@ -1,8 +1,9 @@
 import { NotesContent, TasksContent, Resources, IdeasContent } from './notebook-content';
-import { TabsConfigEntry, JourneyTabState } from '@/app/lib/types';
+import { TabsConfigEntry  } from '@/app/lib/types';
 import JourneyMap from '@/app/components/ui/journey-map/journey-map';
 
-export const createTabsConfig = (props: TabsConfigEntry) => [
+export const createTabsConfig = (props: TabsConfigEntry) => {  
+  return [
   {
     id: 0,
     label: "Instructions",
@@ -16,10 +17,12 @@ export const createTabsConfig = (props: TabsConfigEntry) => [
     content: <JourneyMap 
       onSetLevel={props.mapProps.onSetLevel} 
       state={props.mapProps.state} 
-      tabState={props.tabStates[0] as JourneyTabState} 
-      updateClickedSequence={props.mapProps.updateClickedSequence} 
+      clickedSequence={props.mapProps.clickedSequence} 
       updateAllIconPositions={props.mapProps.updateAllIconPositions} 
-    />
+      handleIconClick={props.mapProps.handleIconClick} 
+    >
+      {props.mapProps.children}
+    </JourneyMap>
   },
   {
     id: 2,
@@ -40,3 +43,4 @@ export const createTabsConfig = (props: TabsConfigEntry) => [
     content: <IdeasContent />
   }
 ];
+}
