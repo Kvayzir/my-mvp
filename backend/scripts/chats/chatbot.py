@@ -21,6 +21,8 @@ class ChatBot:
         )
         self.model = "meta-llama/Llama-3.1-8B-Instruct"
         
+    def generate_welcome_message(self, context: str) -> str:
+        return f"Welcome to the chat! You can ask me about {context}."
 
     def generate_response(self, context: List[Dict[str, str]]) -> str:
         """

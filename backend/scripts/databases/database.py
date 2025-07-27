@@ -157,10 +157,9 @@ class DatabaseManager:
             query = db.query(ChatMessage)
             query = query.filter(ChatMessage.user_id == user_id, ChatMessage.theme == theme)
             
-
             if not query.count():
                 print(f"No chat history found for user {user_id} with theme {theme}. Returning learning journey prompt.")
-                return [SimpleChatMessage(content=self.get_learning_journey_prompt(theme), sender="system", timestamp=datetime.utcnow().timestamp())]
+                return []
             
             messages = query.order_by(ChatMessage.timestamp.desc()).limit(limit).all()
             return self._format_chat_history(messages, theme)

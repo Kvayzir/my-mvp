@@ -5,7 +5,7 @@ import time
 import os
 from typing import List, Dict, Any
 from scripts.chats.chatbot import ChatBot
-from utils.messages import UserRegistration, TopicMessage, ChatMessage, ChatResponse
+from utils.messages import UserRegistration, TopicMessage, ChatMessage, ChatResponse, SimpleChatMessage
 from .databases.database import DatabaseManager
 from .chats.chatManager import ChatMemoryManager
 
@@ -67,7 +67,7 @@ class ChatServer:
             return self.db_manager.get_topics()
         return self.db_manager.get_topics()
 
-    def load_chat(self, user_id: str, topic: str) -> List[Dict[str, Any]]:
+    async def get_conversation(self, user_id: str, topic: str) -> List[SimpleChatMessage]:
         """
         Load chat history for a specific user and topic.
         
@@ -80,15 +80,19 @@ class ChatServer:
         """
         if self.use_database:
             try:
-                return self.db_manager.get_chat_history(user_id=user_id, theme=topic)
+                conversation_msgs = self.db_manager.get_chat_history(user_id=user_id, theme=topic)
+                if len(conversation_msgs) == 0:
+                    print(f"❌ No chat history found for user {user_id} with topic {topic}")
+                    conversation_msgs = await self.memory_manager.create_new_conversation(user_id, topic, self.chatBot.generate_welcome_message)
+                return conversation_msgs
             except Exception as e:
                 print(f"❌ Failed to load chat history from database: {e}")
                 return []
         else:
             # Fallback to in-memory storage
-            return self.memory_manager.get_conversation(user_id, topic).get_context()
+            return self.memory_manager.get_conversation(user_id, topic).get_llm_chat_context()
 
-    async def patch_conversation(self, user_id: str, theme: str, icon_content: str) -> None:
+    async def patch_conversation(self, user_id: str, theme: str, sub_prompt: str) -> None:
         """
         Update the conversation state based on an icon click.
         
@@ -99,8 +103,8 @@ class ChatServer:
         """
         try:
             conversation = await self.memory_manager.get_conversation(user_id, theme)
-            conversation.handle_icon_click(icon_content)
-            print(f"Updated conversation for user {user_id} with theme {theme} to focus on: {icon_content}")
+            conversation.set_current_level_content(sub_prompt)
+            print(f"Updated conversation for user {user_id} with theme {theme} to focus on: {sub_prompt}")
             return True
         except Exception as e:
             print(f"❌ Error updating conversation: {e}")
@@ -131,7 +135,7 @@ class ChatServer:
         conversation = await self.memory_manager.get_conversation(user_id, theme)
         await conversation.add_message(message.msg, sender="user")
         # Generate response (your AI logic here)
-        context = conversation.get_context()
+        context = conversation.get_llm_chat_context()
         response = self.chatBot.generate_response(context)
         
         # Save message 

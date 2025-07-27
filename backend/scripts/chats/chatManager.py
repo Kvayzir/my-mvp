@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Callable
 from .conversation import Conversation
 from utils.messages import ChatMessage
 
@@ -24,14 +24,28 @@ class ChatMemoryManager:
         """Check if message already replied"""
         if (user_id, theme) in self.active_conversations:
             conversation = self.active_conversations[(user_id, theme)]
-            if conversation.get_context()[-2]["content"] == msg:
+            if conversation.get_llm_chat_context()[-2]["content"] == msg:
                 return True
         return False
     
     def idempotency_response(self, user_id: str, theme: str):
-        cache_context = self.active_conversations[(user_id, theme)].get_context()
+        cache_context = self.active_conversations[(user_id, theme)].get_llm_chat_context()
         return cache_context[-1]["content"], len(cache_context)
 
+    async def create_new_conversation(self, user_id: str, theme: str, getBotReply: Callable[[str], str]) -> Conversation:
+        """Create a new conversation or return existing one"""
+        if (user_id, theme) in self.active_conversations:
+            print(f"🔍 Found existing conversation for user {user_id} with theme {theme}")
+            context = self.active_conversations[(user_id, theme)].get_message_history_for_storage()
+            return context
+        
+        conversation = Conversation(user_id, topic=theme, general_system_prompt="Starting new conversation on topic: " + theme)
+        bot_response = getBotReply("Starting new conversation on topic: " + theme)
+        print(f"🤖 Bot response: {bot_response}")
+        await conversation.add_message(bot_response, "bot")
+        await self._add_to_memory(user_id, theme, conversation)
+        context = conversation.get_message_history_for_storage()
+        return context
     
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
         """Get or create conversation with database fallback"""
@@ -45,7 +59,7 @@ class ChatMemoryManager:
         # Load from database
         recent_messages = self.database.get_chat_history(user_id, theme, limit=20)
         print(recent_messages)
-        conversation = Conversation(user_id, initial_messages=recent_messages)
+        conversation = Conversation(user_id, topic=theme, general_system_prompt="Starting new conversation on topic: " + theme, initial_messages=recent_messages)
         
         # Add to memory (with cleanup if needed)
         await self._add_to_memory(user_id, theme, conversation)

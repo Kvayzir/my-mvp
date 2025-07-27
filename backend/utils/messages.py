@@ -1,12 +1,16 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Union
 from dataclasses import dataclass
 
-@dataclass
-class SimpleChatMessage:
+class SimpleChatMessage(BaseModel):
     content: str
     sender: str  # "user" or "bot"
-    timestamp: float
+    timestamp: Union[float, str]
+
+class ContentProgressStatus(BaseModel):
+    discussed_items: List[str] = Field(default_factory=list)
+    total_items: List[str] = Field(default_factory=list)
+    completion_percentage: int = 0
 
 # Pydantic models for request/response
 class UserRegistration(BaseModel):
@@ -21,13 +25,14 @@ class ChatMessage(BaseModel):
     msg: str
 
 class ChatHistoryLoad(BaseModel):
-    msgList: list[SimpleChatMessage]
+    conversation_id: str
+    messages: list[SimpleChatMessage]
 
 class ChatResponse(BaseModel):
     response: str
     timestamp: float
     response_time_ms: int
-    complete: bool 
+    complete: Optional[bool] = False 
 
 class TopicMessage(BaseModel):
     subject: str

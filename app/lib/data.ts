@@ -5,7 +5,7 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const topics = await fetch('http://localhost:8000/topics', {
+    const topics = await fetch('http://localhost:8000/topics/', {
         method: 'GET',
         headers: { 
             'Content-Type': 'application/json',
@@ -30,6 +30,23 @@ export async function fetchChatLoad({user, topic}: {user: string, topic: string}
     return response;
   } catch (error) {
     console.error('Error initializing chat:', error);
+  }
+}
+
+export async function fetchChatStart(request: {user_id: string, topic: string}) {
+  try {
+    const response = await fetch(`http://localhost:8000/conversations/${request.user_id}_${request.topic}`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(res => res.json());
+
+    console.log('Chat response:', response);
+    return response;
+  } catch (error) {
+    console.error('Error initializing chat:', error);
+    return {reply: `Welcome to the chat about ${request.topic}!`, complete: false};
   }
 }
 

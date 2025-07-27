@@ -1,4 +1,4 @@
-# backend/main.py
+import traceback
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -147,6 +147,33 @@ async def get_conversation_history(
         return ChatHistoryLoad(msgList=msg_list)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading chat: {str(e)}")
+
+@router_conversations.get("/{conversation_id}", response_model=ChatHistoryLoad)
+async def start_conversation(
+    conversation_id: str,
+    chat_server: ChatServer = Depends(get_chat_server)
+):
+    """Starts a conversation and returns the initial response."""
+    print(f"Starting conversation with ID: {conversation_id}")
+    try:
+        user_id, topic = conversation_id.split("_", 1)
+        print(f"Starting conversation for user {user_id} on topic {topic}")
+        
+        # Get or create conversation
+        conversation_data = await chat_server.get_conversation(user_id, topic)
+        print(f"DEBUG: Successfully retrieved conversation object.")
+        print(f"DEBUG: Conversation details: {conversation_data}")
+
+        return ChatHistoryLoad(
+            conversation_id=conversation_id,
+            messages=conversation_data
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid conversation_id format. Expected 'user_id_topic'.")
+    except Exception as e:
+        print(f"CRITICAL ERROR: Unhandled exception in start_conversation: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error starting conversation: {str(e)}")
 
 @router_conversations.post("/{conversation_id}/messages", response_model=ChatResponse)
 async def post_message_to_conversation(
