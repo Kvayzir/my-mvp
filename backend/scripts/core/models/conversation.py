@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Union
 from datetime import datetime
 from utils.messages import SimpleChatMessage, ContentProgressStatus
 
-
 class Conversation:
     """
     Manages the state, dialogue history, and content progression for a single user conversation.
