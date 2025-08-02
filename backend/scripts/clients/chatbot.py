@@ -22,15 +22,17 @@ class ChatBot:
         self.model = "meta-llama/Llama-3.1-8B-Instruct"
         
     def generate_welcome_message(self, context: str) -> str:
-        return f"Welcome to the chat! You can ask me about {context}."
+        return f"Hola ##! Hoy hablaremos de {context}. \n¿Estás listo para empezar?"
+    
+    def generate_update_message(self, context: str) -> str:
+        return f"Siguiente tema: {context}. \n¿Listo para continuar?"
 
     def generate_response(self, context: List[Dict[str, str]]) -> str:
         """
         Generate a response to the user's message.
         
         Args:
-            message: The user's message
-            user_id: Unique identifier for the user
+            context: The user's message and chat history for context.
             
         Returns:
             Generated response string
@@ -40,7 +42,7 @@ class ChatBot:
     def _generate_response(self, context: List[Dict[str, str]]) -> str:
         if self.dummy:
             # Dummy response for testing
-            print(f"Generating response for context: {len(context)}")
+            print(f"Generating response from context of length: {len(context)}")
             time.sleep(2)  # Simulate processing delay
             return f"This is a dummy response {len(context)}. The AI prompt is from: \n{context[1]['role']}\n"
         if self.hf_token:
@@ -112,24 +114,13 @@ class ChatBot:
         }
         
         try:
-            # response = requests.post(
-            #     self.hf_api_url, 
-            #     headers=headers, 
-            #     json=payload, 
-            #     timeout=80
-            # )
-            # response.raise_for_status()
-            # 
-            # result = response.json()
-            # generated_text = self._extract_response_text(result)
-            # cleaned_response = self._clean_response(generated_text, conversation)
             completion = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
             )
-            print(f"Response from Llama API:")
-            print(completion.choices[0].message.content)
-            return completion.choices[0].message.content if completion.choices[0].message.content else "I'm not sure how to respond to that."
+            response_text = completion.choices[0].message.content
+            print(f"Response from Llama API: {response_text}")
+            return response_text if response_text else "I'm not sure how to respond to that."
         
         except requests.exceptions.Timeout:
             raise Exception("Request timed out - the model might be loading")
@@ -200,26 +191,6 @@ class ChatBot:
         new_response = new_response.replace("<|eot_id|>", "").replace("<|end_of_text|>", "").strip()
         return new_response
     
-    def _get_conversation_context(self, chat_history: List[Dict[str, Any]], limit: int = 10) -> List[Dict[str, str]]:
-        """
-        Get recent conversation context for AI model.
-        
-        Args:
-            chat_history: Full chat history
-            limit: Maximum number of recent messages to include
-            
-        Returns:
-            List of formatted messages for AI context
-        """
-        recent_messages = []
-        for msg in chat_history[-limit:]:
-            if msg["type"] == "user":
-                recent_messages.append({"role": "user", "content": msg["message"]})
-            elif msg["type"] == "bot":
-                recent_messages.append({"role": "assistant", "content": msg["message"]})
-        
-        return recent_messages
-    
     def _generate_fallback_response(self, message: str) -> str:
         """
         Generate fallback responses when Llama API isn't available.
@@ -244,52 +215,6 @@ class ChatBot:
                 return response
         
         return "That's interesting! I'm currently having trouble with my main AI system, but I'm still here to chat with you."
-    
-    def get_stats(self) -> Dict[str, Any]:
-        """
-        Get basic statistics about the chatbot.
-        
-        Returns:
-            Dictionary containing chat statistics
-        """
-        user_messages = len([msg for msg in self.chat_history if msg["type"] == "user"])
-        bot_messages = len([msg for msg in self.chat_history if msg["type"] == "bot"])
-        unique_users = len(set(msg.get("user_id", "anonymous") for msg in self.chat_history if msg["type"] == "user"))
-        
-        return {
-            "total_messages": len(self.chat_history),
-            "user_messages": user_messages,
-            "bot_messages": bot_messages,
-            "unique_users": unique_users,
-            "llama_api_configured": self.hf_token is not None
-        }
-    
-    def get_chat_history(self, limit: int = 50) -> List[Dict[str, Any]]:
-        """
-        Get recent chat history.
-        
-        Args:
-            limit: Maximum number of messages to return
-            
-        Returns:
-            List of chat history entries
-        """
-        return self.chat_history[-limit:]
-    
-    def clear_chat_history(self) -> None:
-        """
-        Clear the chat history.
-        """
-        self.chat_history = []
-
-    def update_system_prompt(self, new_prompt: str) -> None:
-        """
-        Update the system prompt for the chatbot.
-        
-        Args:
-            new_prompt: New system prompt to use
-        """
-        self.system_prompt = new_prompt
     
     def set_max_tokens(self, max_tokens: int) -> None:
         """

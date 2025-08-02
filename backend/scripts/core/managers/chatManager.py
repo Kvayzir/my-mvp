@@ -1,6 +1,6 @@
 import time
 from typing import Dict, Tuple, Callable
-from .conversation import Conversation
+from ..models.conversation import Conversation
 from utils.messages import ChatMessage
 
 

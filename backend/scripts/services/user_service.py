@@ -1,4 +1,4 @@
-from ..databases.database import DatabaseManager
+from ..clients.database import DatabaseManager
 
 class UserService:
     """

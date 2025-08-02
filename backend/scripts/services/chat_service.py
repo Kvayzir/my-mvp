@@ -5,6 +5,13 @@ from ..core.managers.chatManager import ChatMemoryManager
 from ..clients.chatbot import ChatBot
 from utils.messages import ChatMessage, SimpleChatMessage
 
+CHAT_OPERATION = {
+    "INIT": "SYSTEM_INIT",
+    "UPDATE": "SYSTEM_UPDATE",
+    "PROGRESS": "SYSTEM_PROGRESS",
+    "END": "SYSTEM_END",
+}
+
 class ChatService:
     """
     Handles the core business logic for chat operations, including message
@@ -20,6 +27,8 @@ class ChatService:
         """
         self.memory_manager = memory_manager
         self.chatbot = chatbot
+        self.last_message: str = ""
+        self.last_reply: str = ""
 
     async def get_or_create_conversation(self, user_id: str, topic: str) -> List[SimpleChatMessage]:
         """
@@ -46,7 +55,7 @@ class ChatService:
                 await self.memory_manager.database.save_chat_message({
                     "user_id": user_id,
                     "theme": topic,
-                    "message": "SYSTEM_INIT",
+                    "message": CHAT_OPERATION["INIT"],
                     "response": welcome_text,
                     "response_time_ms": 0,
                 })
@@ -102,11 +111,25 @@ class ChatService:
         Returns:
             True if the update was successful, False otherwise.
         """
+        if self.last_message == sub_prompt:
+            print(f"Idempotent update detected for user '{user_id}' on topic '{theme}'. Returning last reply.")
+            return self.last_reply
         try:
             conversation = await self.memory_manager.get_conversation(user_id, theme)
             conversation.set_current_level_content(sub_prompt)
             print(f"Context updated for user '{user_id}' on topic '{theme}'.")
-            return True
+            update_text = self.chatbot.generate_update_message(sub_prompt)
+            # Save the subtopic change to the database
+            await self.memory_manager.database.save_chat_message({
+                "user_id": user_id,
+                "theme": theme,
+                "message": CHAT_OPERATION["UPDATE"],
+                "response": update_text,
+                "response_time_ms": 0,
+            })
+            self.last_message = sub_prompt
+            self.last_reply = update_text
+            return update_text
         except Exception as e:
             print(f"❌ Error updating conversation context for user '{user_id}': {e}")
             return False

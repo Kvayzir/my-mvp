@@ -1,5 +1,5 @@
 from typing import List, Optional
-from ..databases.database import DatabaseManager
+from ..clients.database import DatabaseManager
 from utils.messages import TopicMessage
 
 class TopicService:

@@ -9,9 +9,10 @@ interface ChatViewerProps {
     messages: ChatMessage[];
     onUpdateMessage: (id: number, newText: string) => void; // Modified to pass ID
     onUpdateState: (state: JourneyState) => void;
+    onAddMessage: (text: string, sender: "user" | "bot" | "system", parsed?: boolean) => void;
 }
 
-export default function ChatViewer({ messages, onUpdateMessage, onUpdateState }: ChatViewerProps) {
+export default function ChatViewer({ messages, onUpdateMessage, onUpdateState, onAddMessage }: ChatViewerProps) {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     // Scroll to the bottom whenever messages update
@@ -32,7 +33,8 @@ export default function ChatViewer({ messages, onUpdateMessage, onUpdateState }:
                             <ChatMessageBubble 
                                 chatMessage={message} 
                                 onUpdateMessage={onUpdateMessage}
-                                onUpdateState={onUpdateState} 
+                                onUpdateState={onUpdateState}
+                                onAddMessage={onAddMessage}
                             />
                         </Suspense>
                     ))

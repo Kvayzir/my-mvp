@@ -202,9 +202,9 @@ async def update_conversation_context(
     """Updates the conversation's context, such as when an icon is clicked."""
     try:
         user_id, topic = conversation_id.split("_", 1)
-        success = await app_service.chat_service.update_conversation_context(user_id, topic, update_data.active_icon_content)
-        if success:
-            return {"status": "success", "message": "Conversation context updated."}
+        response = await app_service.chat_service.update_conversation_context(user_id, topic, update_data.active_icon_content)
+        if response:
+            return {"status": "success", "message": response}
         else:
             raise HTTPException(status_code=404, detail="Conversation not found or could not be updated.")
     except ValueError:

@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ChatViewer from './ChatViewer';
 import ChatInput from './ChatInput';
-import { ChatMessage, ChatProps, JourneyState } from '@/app/lib/types';
-import { fetchChatStart } from '@/app/lib/data';
+import { ChatMessage, ChatProps, JourneyState, ChatReplyRequest } from '@/app/lib/types';
+import { fetchChatStart, patchChatConversation } from '@/app/lib/data';
 
 const TOPIC_CONTENT_MAP = {
     "Ciudad": "",
@@ -82,7 +82,7 @@ export default function ChatContainer(props: ChatProps) {
             // addMessage(initialPrompt, 'bot', false); // Mark as not parsed yet, will trigger fetch in MessageBubble
         };
         initializeChat();
-    }, [topic, addMessage]); // Re-run if topic changes
+    }, [topic, addMessage, userId]); // Re-run if topic changes
 
     // Effect for handling level changes
     useEffect(() => {
@@ -97,19 +97,53 @@ export default function ChatContainer(props: ChatProps) {
         
         // Only proceed if the level actually changed
         if (previousLevel.current !== props.level) {
-            const currentTopicContent = TOPIC_CONTENT_MAP[props.level as keyof typeof TOPIC_CONTENT_MAP];
-            if (currentTopicContent) {
-                addMessage(`Contenido: ${currentTopicContent}`, 'system', false);
-            } else {
-                addMessage(`Contenido para '${props.level}' no disponible.`, 'system', false);
-            }
-            
-            const levelChangePrompt = `Ahora vamos a cambiar el nivel de dificultad a ${props.level}. Ajusta tu siguiente respuesta al nivel ${props.level} y continúa motivando al estudiante. Haz una pregunta apropiada para este nuevo nivel sobre el tema ${topic || 'Introducción a la investigación'}.`;
-            addMessage(levelChangePrompt, 'bot', false); // Mark as not parsed yet
 
-            previousLevel.current = props.level; // Update the previous level
+            const handleLevelChange = async () => {
+                const currentTopicContent = TOPIC_CONTENT_MAP[props.level as keyof typeof TOPIC_CONTENT_MAP];
+                let systemMessageText = '';
+                if (currentTopicContent) {
+                    systemMessageText = `Contenido:\n ${currentTopicContent}`;
+                } else {
+                    systemMessageText = `Contenido para '${props.level}' no disponible.`;
+                }
+
+                // Add system message and immediately process it to get a reply
+                messageIdCounter.current += 1;
+                const systemMessage: ChatMessage = {
+                    id: messageIdCounter.current,
+                    user_id: userId || 'anonymous',
+                    user_type: 'system',
+                    text: systemMessageText,
+                    parsed: true,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                
+                const request: ChatReplyRequest = {
+                    id: systemMessage.id,
+                    user_id: userId || "anonymous",
+                    topic: topic || 'Introducción a la investigación',
+                    msg: systemMessageText
+                };
+
+                // Patch conversation on the backend and get the reply from the bot
+                try {
+                    const reply = await patchChatConversation(request, systemMessageText);
+                    const botReplyText = reply.message;
+                    
+                    setMessages(prevMessages => [...prevMessages, systemMessage]);
+                    addMessage(botReplyText, 'bot', true); // Add the bot's reply directly
+                } catch (error) {
+                    console.error("Error processing system message:", error);
+                    // Add an error message to the chat if patching fails
+                    setMessages(prevMessages => [...prevMessages, systemMessage]);
+                    addMessage("Error processing the system message", 'system', true);
+                }
+
+                previousLevel.current = props.level;
+            };
+            handleLevelChange();
         }
-    }, [props.level, topic, addMessage]); // Dependencies for useEffect
+    }, [props.level, topic, addMessage, userId]); // Dependencies for useEffect
 
     return (
         <div className="max-w-2xl mx-auto p-4 flex flex-col h-full">
@@ -119,7 +153,8 @@ export default function ChatContainer(props: ChatProps) {
             <ChatViewer 
                 messages={messages} 
                 onUpdateMessage={updateLastMessage} 
-                onUpdateState={handleStateChange} 
+                onUpdateState={handleStateChange}
+                onAddMessage={addMessage} 
             />
             <ChatInput onSendMessage={addMessage} />
         </div>

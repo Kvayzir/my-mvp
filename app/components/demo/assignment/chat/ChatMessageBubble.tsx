@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/contexts/UserContext';
-import { fetchChatReply, patchChatConversation } from '@/app/lib/data'; // Ensure these are client-callable
+import { fetchChatReply } from '@/app/lib/data'; // Ensure these are client-callable
 import { MessageSkeleton } from '@/app/components/ui/skeletons';
 import { ChatMessage, ChatReplyRequest, JourneyState } from '@/app/lib/types';
 
@@ -11,9 +11,10 @@ interface ChatMessageBubbleProps {
     chatMessage: ChatMessage;
     onUpdateMessage: (id: number, newText: string) => void; // Modified to pass ID
     onUpdateState: (state: JourneyState) => void;
+    onAddMessage: (text: string, sender: "user" | "bot" | "system", parsed?: boolean) => void;
 }
 
-export default function ChatMessageBubble({ chatMessage, onUpdateMessage, onUpdateState }: ChatMessageBubbleProps) {
+export default function ChatMessageBubble({ chatMessage, onUpdateMessage, onUpdateState, onAddMessage }: ChatMessageBubbleProps) {
     // isLoading is true if message is not parsed yet, meaning it needs fetching
     const [isLoading, setIsLoading] = useState(!chatMessage.parsed);
     const [content, setContent] = useState(chatMessage.parsed ? chatMessage.text : '');
@@ -25,7 +26,7 @@ export default function ChatMessageBubble({ chatMessage, onUpdateMessage, onUpda
     useEffect(() => {
         const fetchAndProcessReply = async () => {
             // If message is already parsed or it's a user message, no fetch needed here
-            if (chatMessage.parsed || chatMessage.user_type === 'user') {
+            if (chatMessage.parsed || chatMessage.user_type !== 'bot') {
                 setIsLoading(false); // Ensure loading is false if no fetch is needed
                 return;
             }
@@ -39,23 +40,10 @@ export default function ChatMessageBubble({ chatMessage, onUpdateMessage, onUpda
                     msg: chatMessage.text // This is the prompt for the bot
                 };
 
-                let replyText = '';
-                console.log('User type:', chatMessage.user_type);
-                if (chatMessage.user_type === 'system') {
-                    // System messages are sent to patchChatConversation
-                    // The 'content' state of this component is the system message text
-                    const reply = await patchChatConversation(request, chatMessage.text);
-                    replyText = reply; // Assuming patchChatConversation returns the updated content or confirmation
-                    console.log('System message processed:', reply);
-                    setContent(chatMessage.text || 'Tema cambiado');
-                    return;
-                } else if (chatMessage.user_type === 'bot') {
-                    // Bot messages are sent to fetchChatReply to get the actual bot response
-                    const response = await fetchChatReply(request);
-                    replyText = response.reply;
-                    if (response.complete) {
-                        onUpdateState('end'); // Update journey state if conversation is complete
-                    }
+                const response = await fetchChatReply(request);
+                const replyText = response.reply;
+                if (response.complete) {
+                    onUpdateState('end'); // Update journey state if conversation is complete
                 }
                 
                 // Update the message in the parent state
@@ -74,7 +62,7 @@ export default function ChatMessageBubble({ chatMessage, onUpdateMessage, onUpda
         };
 
         fetchAndProcessReply();
-    }, [chatMessage.id, chatMessage.parsed, chatMessage.user_type, chatMessage.text, topic, userId, onUpdateMessage, onUpdateState]); // Dependencies
+    }, [chatMessage.id, chatMessage.parsed, chatMessage.user_type, chatMessage.text, topic, userId, onUpdateMessage, onUpdateState, onAddMessage]); // Dependencies
 
     if (isLoading) {
         return <MessageSkeleton />;
