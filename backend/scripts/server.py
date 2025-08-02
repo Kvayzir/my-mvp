@@ -19,11 +19,10 @@ class AppService:
     def __init__(self):
         """Initializes the main application service and its components."""
         self.hf_token = os.getenv("HUGGINGFACE_TOKEN")
-        self.chatBot = ChatBot(dummy=True)
 
         # 1. Initialize low-level managers
         self.db_manager = DatabaseManager()
-        self.chatbot = ChatBot(dummy=True) # The AI Brain
+        self.chatbot = ChatBot(dummy=False) # The AI Brain
         self.memory_manager = ChatMemoryManager(self.db_manager) # The Conversation State Manager
 
         # 2. Initialize high-level services with their dependencies

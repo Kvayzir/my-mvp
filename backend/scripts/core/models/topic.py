@@ -33,6 +33,12 @@ class Topic:
             f"sub_content_keys={list(self.sub_content.keys())})"
         )
 
+    def get_general_prompt(self) -> str:
+        """
+        Returns the general system prompt for this topic.
+        """
+        return self.general_prompt
+
     def get_prompt_for_sub_content(self, sub_content_key: str) -> Optional[str]:
         """
         Retrieves the specific content material for a given sub-topic key.

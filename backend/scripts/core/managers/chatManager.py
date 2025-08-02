@@ -1,6 +1,7 @@
 import time
 from typing import Dict, Tuple, Callable
 from ..models.conversation import Conversation
+from ..models.topic import Topic
 from utils.messages import ChatMessage
 
 
@@ -32,21 +33,6 @@ class ChatMemoryManager:
         cache_context = self.active_conversations[(user_id, theme)].get_llm_chat_context()
         return cache_context[-1]["content"], len(cache_context)
 
-    async def create_new_conversation(self, user_id: str, theme: str, getBotReply: Callable[[str], str]) -> Conversation:
-        """Create a new conversation or return existing one"""
-        if (user_id, theme) in self.active_conversations:
-            print(f"🔍 Found existing conversation for user {user_id} with theme {theme}")
-            context = self.active_conversations[(user_id, theme)].get_message_history_for_storage()
-            return context
-        
-        conversation = Conversation(user_id, topic=theme, general_system_prompt="Starting new conversation on topic: " + theme)
-        bot_response = getBotReply("Starting new conversation on topic: " + theme)
-        print(f"🤖 Bot response: {bot_response}")
-        await conversation.add_message(bot_response, "bot")
-        await self._add_to_memory(user_id, theme, conversation)
-        context = conversation.get_message_history_for_storage()
-        return context
-    
     async def get_conversation(self, user_id: str, theme: str) -> Conversation:
         """Get or create conversation with database fallback"""
         # Check if already in memory
@@ -59,8 +45,57 @@ class ChatMemoryManager:
         # Load from database
         recent_messages = self.database.get_chat_history(user_id, theme, limit=20)
         print(recent_messages)
-        conversation = Conversation(user_id, topic=theme, general_system_prompt="Starting new conversation on topic: " + theme, initial_messages=recent_messages)
-        
+
+        # Forcing the general system prompt
+        prompt = (
+            f"Eres un asistente de profesor de educación secundaria cuyo objetivo es incentivar el aprendizaje de los estudiantes.\n"
+            f"Para ello, tienes a tu disposición de material que ha preparado el docente para que compartas con los estudiantes. Este material ha sido segmentado para que los alumnos puedan visualizar el contenido en un mapa presente en la aplicación.\n" 
+            f"Tu principal objetivo es lograr que los alumnos se interesen por aprender el material.\n"
+            f"Tu modo de trabajo es el siguiente: basandote entéramente del material del docente, compartes un dato al alumno y le das una pregunta que le permita anticipar el siguiente dato del material, adapta tus respuestas y el contenido siguiente a compartir en base a la respuesta y el interés que demuestra el alumno."
+            f"Recuerda ser breve en tus respuestas, no más de 5 oraciones, y no compartir más de un dato a la vez. "
+            f"IMPORTANTE: No debes comentar información que no esté en el material del docente, y debes adaptar tus respuestas a la edad de los estudiantes de secundaria. "
+            f"En el caso que ya no tengas más contenido, instruye al alumno a que utilize el mapa de la aplicación para pasar al siguiente tema que desee explorar."
+            f"El tema de conversación de este chat es el siguiente: {theme}"
+        )
+        content = (
+            f"Tu primera misión es introducir el tema en base a las temáticas disponibles: \n"
+            f"- Un viaje microscópico a la célula\n"
+            f"- La célula como una ciudad organizada\n"
+            f"- Construyendo una base secreta inspirandonos de la célula\n"
+            f"- La fascinante historia del núcleo\n"
+            f"Presenta las opciones y pregunta al alumno cuál le gustaría explorar."
+        )
+        topic = Topic(
+            name=theme,
+            general_prompt=prompt,
+            sub_content={
+                "intro": content,
+                "city": """"
+                Hoy vamos a emprender un viaje increíble al mundo de lo microscópico, a las unidades fundamentales que nos forman: las células. Pero no las veamos solo como bolitas abstractas. ¡Imaginemos que cada célula es una mini ciudad bulliciosa! 🌃
+                En esta ciudad celular, el núcleo es el ayuntamiento o la alcaldía. Es el centro de control, con su propia biblioteca de planos (los cromosomas) que contienen todas las instrucciones para que la ciudad funcione. Fuera del ayuntamiento, en las calles gelatinosas del 
+                citoplasma, trabajan diligentemente los organelos, que son como las fábricas y servicios de la ciudad. Por ejemplo, las 
+                mitocondrias son las centrales eléctricas de la ciudad, encargadas de producir la energía necesaria para todas las actividades. Los 
+                ribosomas, por su parte, son como pequeñas fábricas de proteínas, los bloques de construcción de todo en la ciudad. Mientras tanto, el 
+                citoesqueleto es como la red de carreteras y la estructura de los edificios, que le da forma a la ciudad y permite el movimiento de todo en su interior.
+                ¿No les parece fascinante? Esta mini ciudad está trabajando sin parar en cada uno de nosotros. ¡Descubramos juntos los secretos que esconde cada una de sus partes!
+                """,
+                "nucleo": (
+                    "Es una estructura esférica presente en todas las células eucariotas. En su interior se encuentra el material genético (ADN) que "
+                    "contiene los genes, los cuales son los encargados de transmitir información de generación en generación. La función del núcleo" 
+                    "es mantener la integridad de los genes y controlar las actividades celulares; por ello, se dice que es el centro de control de la" 
+                    "célula. En el núcleo podemos encontrar diferentes estructuras: envoltura nuclear, nucléolo, nucleoplasma, poro nuclear, y cromatina."
+                    ),
+                "citoesqueleto": "Construyendo una base secreta inspirandonos de la célula",
+                "energy": "La fascinante historia del núcleo"
+            },
+            objectives=[
+                "Entender la estructura y función de la célula.",
+                "Identificar las partes principales de una célula.",
+                "Relacionar las funciones celulares con analogías cotidianas."
+            ]
+        )
+        conversation = Conversation(user_id, topic=topic, initial_messages=recent_messages)
+        conversation.set_current_level_content("intro")
         # Add to memory (with cleanup if needed)
         await self._add_to_memory(user_id, theme, conversation)
         return conversation

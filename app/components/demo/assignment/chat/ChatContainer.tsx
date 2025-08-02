@@ -9,14 +9,14 @@ import { ChatMessage, ChatProps, JourneyState, ChatReplyRequest } from '@/app/li
 import { fetchChatStart, patchChatConversation } from '@/app/lib/data';
 
 const TOPIC_CONTENT_MAP = {
-    "Ciudad": "",
+    "Ciudad": "city",
     "Secret": "",
     "microscopio": "",
     "core": "",
     "energy": "",
     "sustances": "",
-    "citoesqueleto": "",
-    "nucleo": ""
+    "citoesqueleto": "citoesqueleto",
+    "nucleo": "nucleo"
 }
 
 export default function ChatContainer(props: ChatProps) {
@@ -100,12 +100,6 @@ export default function ChatContainer(props: ChatProps) {
 
             const handleLevelChange = async () => {
                 const currentTopicContent = TOPIC_CONTENT_MAP[props.level as keyof typeof TOPIC_CONTENT_MAP];
-                let systemMessageText = '';
-                if (currentTopicContent) {
-                    systemMessageText = `Contenido:\n ${currentTopicContent}`;
-                } else {
-                    systemMessageText = `Contenido para '${props.level}' no disponible.`;
-                }
 
                 // Add system message and immediately process it to get a reply
                 messageIdCounter.current += 1;
@@ -113,7 +107,7 @@ export default function ChatContainer(props: ChatProps) {
                     id: messageIdCounter.current,
                     user_id: userId || 'anonymous',
                     user_type: 'system',
-                    text: systemMessageText,
+                    text: currentTopicContent,
                     parsed: true,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 };
@@ -122,12 +116,12 @@ export default function ChatContainer(props: ChatProps) {
                     id: systemMessage.id,
                     user_id: userId || "anonymous",
                     topic: topic || 'Introducción a la investigación',
-                    msg: systemMessageText
+                    msg: currentTopicContent
                 };
 
                 // Patch conversation on the backend and get the reply from the bot
                 try {
-                    const reply = await patchChatConversation(request, systemMessageText);
+                    const reply = await patchChatConversation(request, currentTopicContent);
                     const botReplyText = reply.message;
                     
                     setMessages(prevMessages => [...prevMessages, systemMessage]);

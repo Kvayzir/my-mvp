@@ -117,8 +117,12 @@ class ChatService:
         try:
             conversation = await self.memory_manager.get_conversation(user_id, theme)
             conversation.set_current_level_content(sub_prompt)
+
             print(f"Context updated for user '{user_id}' on topic '{theme}'.")
+
             update_text = self.chatbot.generate_update_message(sub_prompt)
+            await conversation.add_message(update_text, sender="bot")
+            
             # Save the subtopic change to the database
             await self.memory_manager.database.save_chat_message({
                 "user_id": user_id,

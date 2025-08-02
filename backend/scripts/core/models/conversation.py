@@ -3,6 +3,7 @@ import time
 from typing import Dict, List, Optional, Union
 from datetime import datetime
 from utils.messages import SimpleChatMessage, ContentProgressStatus
+from .topic import Topic
 
 class Conversation:
     """
@@ -11,8 +12,7 @@ class Conversation:
     def __init__(
         self, 
         user_id: str, 
-        topic: str, # Main topic of the conversation
-        general_system_prompt: str, # Overarching LLM instruction
+        topic: Topic,
         initial_messages: Optional[List[SimpleChatMessage]] = None,
         initial_level_content: Optional[str] = None,
         initial_progress_status: Optional[ContentProgressStatus] = None,
@@ -23,12 +23,11 @@ class Conversation:
         
         self.user_id = user_id
         self.topic = topic
-        self.general_system_prompt = general_system_prompt
         
         # Dialogue history - stores SimpleChatMessage Pydantic instances
         self.messages: List[SimpleChatMessage] = initial_messages or []
         self.last_activity = time.time()
-        self.max_messages = 20  # Keep last 20 messages in memory for context
+        self.max_messages = 50  # Keep last 20 messages in memory for context
 
         # Attributes for content progression and state
         self.current_level_content: Optional[str] = initial_level_content # The material for the current sub-prompt
@@ -79,7 +78,7 @@ class Conversation:
         if len(self.messages) > self.max_messages:
             self.messages = self.messages[-self.max_messages:]
 
-    def get_llm_chat_context(self, max_messages: int = 20) -> List[Dict[str, str]]:
+    def get_llm_chat_context(self, max_messages: int = 50) -> List[Dict[str, str]]:
         """
         Generates the context for the main LLM to respond to the user.
         Includes general system prompt, current level content, and recent chat history.
@@ -92,16 +91,15 @@ class Conversation:
         context: List[Dict[str, str]] = []
         
         # 1. General system prompt (always present)
-        context.append({"role": "system", "content": self.general_system_prompt})
+        context.append({"role": "system", "content": self.topic.get_general_prompt()})
 
         # 2. Current level content (if set)
         if self.current_level_content:
             context.append({
                 "role": "system", 
                 "content": (
-                    f"The student is currently learning about the following material: "
-                    f"'{self.current_level_content}'. "
-                    "Focus your responses on this material and guide the student through it."
+                    f"Tu misión es guiar al estudiante a aprender el material del docente. "
+                    f"'{self.topic.get_prompt_for_sub_content(self.current_level_content)}'. "
                 )
             })
         

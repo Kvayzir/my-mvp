@@ -43,6 +43,7 @@ class ChatBot:
         if self.dummy:
             # Dummy response for testing
             print(f"Generating response from context of length: {len(context)}")
+            print(f"Recent messages: {context}")
             time.sleep(2)  # Simulate processing delay
             return f"This is a dummy response {len(context)}. The AI prompt is from: \n{context[1]['role']}\n"
         if self.hf_token:
