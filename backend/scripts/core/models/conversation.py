@@ -89,21 +89,11 @@ class Conversation:
             return self._cache[cache_key]
         
         context: List[Dict[str, str]] = []
-        
-        # 1. General system prompt (always present)
-        context.append({"role": "system", "content": self.topic.get_general_prompt()})
 
-        # 2. Current level content (if set)
-        if self.current_level_content:
-            context.append({
-                "role": "system", 
-                "content": (
-                    f"Tu misión es guiar al estudiante a aprender el material del docente. "
-                    f"'{self.topic.get_prompt_for_sub_content(self.current_level_content)}'. "
-                )
-            })
+        # 1. General system prompt (always present)
+        context.append({"role": "system", "content": self.topic.get_general_prompt(self.current_level_content)})
         
-        # 3. Recent chat messages
+        # 2. Recent chat messages
         # Make sure not to exceed max_messages, considering prepended system prompts
         num_messages_to_take = max_messages - len(context)
         recent_messages = self.messages[-num_messages_to_take:] if num_messages_to_take > 0 else []

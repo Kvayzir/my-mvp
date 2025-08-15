@@ -41,9 +41,8 @@ export const JOURNEY_DATA = [
   {
     ring: 2,
     items: [
-      { name: "El núcleo", icon: "🧿", color: "purple", level: "core" },
+      { name: "Misión núcle", icon: "🧿", color: "purple", level: "core" },
       { name: "Una mini ciudad", icon: "🏙️", color: "teal", level: "Ciudad" },
-      { name: "Una base secreta", icon: "㊙️", color: "gray", level: "Secret" },
       { name: "Viaje microscópico", icon: "🛩️", color: "indigo", level: "microscopio" },
     ] as (JourneyIconEntry & { level: string })[]
   }

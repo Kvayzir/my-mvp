@@ -47,46 +47,73 @@ class ChatMemoryManager:
         print(recent_messages)
 
         # Forcing the general system prompt
-        prompt = (
-            f"Eres un asistente de profesor de educación secundaria cuyo objetivo es incentivar el aprendizaje de los estudiantes.\n"
-            f"Para ello, tienes a tu disposición de material que ha preparado el docente para que compartas con los estudiantes. Este material ha sido segmentado para que los alumnos puedan visualizar el contenido en un mapa presente en la aplicación.\n" 
-            f"Tu principal objetivo es lograr que los alumnos se interesen por aprender el material.\n"
-            f"Tu modo de trabajo es el siguiente: basandote entéramente del material del docente, compartes un dato al alumno y le das una pregunta que le permita anticipar el siguiente dato del material, adapta tus respuestas y el contenido siguiente a compartir en base a la respuesta y el interés que demuestra el alumno."
-            f"Recuerda ser breve en tus respuestas, no más de 5 oraciones, y no compartir más de un dato a la vez. "
-            f"IMPORTANTE: No debes comentar información que no esté en el material del docente, y debes adaptar tus respuestas a la edad de los estudiantes de secundaria. "
-            f"En el caso que ya no tengas más contenido, instruye al alumno a que utilize el mapa de la aplicación para pasar al siguiente tema que desee explorar."
-            f"El tema de conversación de este chat es el siguiente: {theme}"
-        )
         content = (
-            f"Tu primera misión es introducir el tema en base a las temáticas disponibles: \n"
-            f"- Un viaje microscópico a la célula\n"
-            f"- La célula como una ciudad organizada\n"
-            f"- Construyendo una base secreta inspirandonos de la célula\n"
-            f"- La fascinante historia del núcleo\n"
-            f"Presenta las opciones y pregunta al alumno cuál le gustaría explorar."
+            "Tu primera misión es introducir el tema en base a las temáticas disponibles: \n"
+            "- Un viaje microscópico a la célula\n"
+            "- La célula como una ciudad organizada\n"
+            "- La misión para descubrir del núcleo\n"
+            "Presenta las opciones y pregunta al alumno cuál le gustaría explorar."
+            "Una vez que el alumno elija, instruye al alumno a hacer clic en el icono correspondiente para comenzar el viaje.\n\n"
         )
         topic = Topic(
             name=theme,
-            general_prompt=prompt,
+            theme="Partes de la célula",
             sub_content={
                 "intro": content,
-                "city": """"
-                Hoy vamos a emprender un viaje increíble al mundo de lo microscópico, a las unidades fundamentales que nos forman: las células. Pero no las veamos solo como bolitas abstractas. ¡Imaginemos que cada célula es una mini ciudad bulliciosa! 🌃
-                En esta ciudad celular, el núcleo es el ayuntamiento o la alcaldía. Es el centro de control, con su propia biblioteca de planos (los cromosomas) que contienen todas las instrucciones para que la ciudad funcione. Fuera del ayuntamiento, en las calles gelatinosas del 
-                citoplasma, trabajan diligentemente los organelos, que son como las fábricas y servicios de la ciudad. Por ejemplo, las 
-                mitocondrias son las centrales eléctricas de la ciudad, encargadas de producir la energía necesaria para todas las actividades. Los 
-                ribosomas, por su parte, son como pequeñas fábricas de proteínas, los bloques de construcción de todo en la ciudad. Mientras tanto, el 
-                citoesqueleto es como la red de carreteras y la estructura de los edificios, que le da forma a la ciudad y permite el movimiento de todo en su interior.
-                ¿No les parece fascinante? Esta mini ciudad está trabajando sin parar en cada uno de nosotros. ¡Descubramos juntos los secretos que esconde cada una de sus partes!
-                """,
+                "mission": (
+                    "¡Atención, agente! 🕵️‍♂️ Tu próxima misión te lleva al lugar más importante del universo... ¡dentro de una célula!"
+                    "El núcleo  es el centro de control, una especie de cuartel general que guarda los planos y toda la información crucial."
+                    "Tu objetivo es entender por qué este 'cerebro' celular es tan vital."
+                    "Para lograrlo, tenemos algunas pistas clave. El núcleo está protegido por una membrana que actúa como un muro, pero tiene poros que funcionan como puntos de control para que algunas moléculas, como el ARN, puedan entrar y salir."
+                    "¿Listo para empezar tu misión? 🤔"
+                ),
+                "city": (
+                    "¿Alguna vez te has preguntado cómo funciona una ciudad? Tiene un ayuntamiento que la controla, una red de transporte que mueve personas y mercancías, y plantas de energía que la mantienen activa."
+                    "¡Pues tu cuerpo tiene miles de millones de ciudades diminutas llamadas células que funcionan de una forma muy similar! "
+                    "En este viaje, exploraremos cómo cada parte de la célula, desde el núcleo hasta las mitocondrias, cumple una función vital para mantener el orden y la vida. "
+                    "Te invitamos a descubrir los 'edificios' y los 'sistemas de gobierno' de esta increíble ciudad microscópica."
+                ),
+                "travel": (
+                    "Prepárate para un viaje increíble, ¡uno que te llevará al interior de la vida misma! En lugar de viajar a otro país, nos aventuraremos en el universo microscópico de la célula. "
+                    "Descubriremos que en su centro se esconde un 'cerebro' llamado núcleo, que guarda un tesoro muy valioso: el material genético. "
+                    "También conoceremos a los 'obreros' que construyen proteínas y a los 'guardianes' que protegen la célula de peligros. "
+                    "A lo largo de esta aventura, desvelaremos cómo estos pequeños componentes trabajan juntos para dar vida a los organismos, ¡incluyéndote a ti!"
+                ),
                 "nucleo": (
-                    "Es una estructura esférica presente en todas las células eucariotas. En su interior se encuentra el material genético (ADN) que "
-                    "contiene los genes, los cuales son los encargados de transmitir información de generación en generación. La función del núcleo" 
-                    "es mantener la integridad de los genes y controlar las actividades celulares; por ello, se dice que es el centro de control de la" 
-                    "célula. En el núcleo podemos encontrar diferentes estructuras: envoltura nuclear, nucléolo, nucleoplasma, poro nuclear, y cromatina."
+                    "El núcleo es una estructura esférica presente en todas las células eucariotas y es considerado el centro de control de la célula."
+                    "Su función es mantener la integridad de los genes y controlar las actividades celulares. " 
+                    "Dentro del núcleo se encuentra el material genético (ADN) en forma de genes, que transmiten la información de generación en generación." 
+                    "El núcleo está compuesto por varias estructuras:"
+                    "- Envoltura nuclear o carioteca: Una doble membrana con poros que regula el paso de moléculas entre el núcleo y el citoplasma. La membrana externa tiene ribosomas adheridos."
+                    "- Nucléolo: Una estructura granulosa donde se sintetizan y ensamblan los ribosomas. Normalmente, hay entre uno a cinco nucléolos por célula."
+                    "- Nucleoplasma: Un material de consistencia gelatinosa compuesto por agua, sales y proteínas."
+                    "- Cromatina: Filamentos de ADN y proteínas. Durante la división celular, se compacta para formar los cromosomas."
+                    "- Poro nuclear. Es una válvula formada por proteínas, que selecciona lo que entra y lo que sale del núcleo."
                     ),
-                "citoesqueleto": "Construyendo una base secreta inspirandonos de la célula",
-                "energy": "La fascinante historia del núcleo"
+                "citoesqueleto": (
+                    "El citoplasma de las células eucariotas contiene una red de tubos y filamentos de proteínas que conforman el citoesqueleto."
+                    "Su función principal es dar forma y resistencia mecánica a la célula. También participa en el movimiento celular, sostiene los orgánulos y permite que se movilicen, e interviene en la división celular."
+                    "El citoesqueleto está formado por tres tipos de fibras:"
+                    "- Microfilamentos: Compuestos por moléculas de actina, su longitud aumenta y disminuye continuamente."
+                    "- Filamentos intermedios: Son estables y proporcionan soporte a la membrana celular."
+                    "- Microtúbulos: Son estructuras huecas de tubulina que modifican la forma de la célula y redistribuyen los orgánulos."
+                ),
+                "energia": (
+                    "La mitocondria es el organelo encargado de abastecer de energía a la célula."
+                    "A través de la respiración celular, utiliza la glucosa para sintetizar moléculas de ATP, las cuales almacenan grandes cantidades de energía."
+                    "La mitocondria posee una membrana externa y una membrana interna, entre las cuales hay un espacio intermembrana. La membrana interna se pliega formando las crestas, y dentro de esta se encuentra la matriz mitocondrial."
+                    "La mitocondria también contiene su propio ADN y ribosomas."
+                    "El cloroplasto es otro organelo energético, aunque es exclusivo de las células vegetales. Contiene clorofila, un pigmento que participa en la fotosíntesis"
+                ),
+                "organelos": (
+                    "Estos orgánulos se encargan de crear, modificar o transportar diversas sustancias dentro de la célula:"
+                    "- Retículo endoplasmático rugoso (RER): Es una extensión de la membrana nuclear y se caracteriza por tener ribosomas adheridos, lo que le da una apariencia rugosa. Su función principal es la síntesis y el transporte de proteínas."
+                    "- Retículo endoplasmático liso (REL): Similar al RER pero sin ribosomas. Su función es la síntesis de lípidos y la desintoxicación celular de sustancias como drogas o pesticidas."
+                    "- Aparato de Golgi: Un conjunto de bolsas membranosas planas que empaquetan las proteínas para que puedan ser secretadas al exterior de la célula."
+                    "- Ribosoma: Estructura compuesta por ARN ribosomal y proteínas. Su función principal es la síntesis de proteínas."
+                    "- Vacuola: Es una vesícula con una membrana y un interior predominantemente acuoso. En las células animales suelen ser pequeñas y se les llama vesículas. En las células vegetales son muy grandes y acumulan agua, reservas o desechos."
+                    "- Lisosoma: Es una vesícula que contiene enzimas digestivas que digieren la materia orgánica. La digestión puede ser extracelular (cuando vierten las enzimas al exterior) o intracelular (cuando se unen a una vacuola que contiene la materia a digerir)."
+                )
             },
             objectives=[
                 "Entender la estructura y función de la célula.",

@@ -10,11 +10,10 @@ import { fetchChatStart, patchChatConversation } from '@/app/lib/data';
 
 const TOPIC_CONTENT_MAP = {
     "Ciudad": "city",
-    "Secret": "",
-    "microscopio": "",
-    "core": "",
-    "energy": "",
-    "sustances": "",
+    "microscopio": "travel",
+    "core": "mission",
+    "energy": "energia",
+    "sustances": "organelos",
     "citoesqueleto": "citoesqueleto",
     "nucleo": "nucleo"
 }
