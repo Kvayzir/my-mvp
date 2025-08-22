@@ -42,7 +42,6 @@ next-env.d.ts
 
 # Python Backend
 backend/venv/
-backend/__pycache__/
 backend/*.pyc
 backend/*.pyo
 backend/*.pyd
@@ -75,13 +74,12 @@ backend/.vscode/
 backend/.idea/
 backend/*.swp
 backend/*.swo
+__pycache__/
 
 # Python testing
 backend/.pytest_cache/
 backend/.coverage
 backend/htmlcov/
-backend/scripts/__pycache__
-backend/utils/__pycache__
 
 # Python logs
 backend/*.log
