@@ -62,6 +62,9 @@ const useNotebook = () => {
         if (item.onClick) {
           item.onClick();
         }
+
+        setActiveTab(2);
+        console.log(`Icon clicked: ${item.name}`);
       }, [clickedSequence, updateClickedSequence]);
 
       const resetArrows = useCallback(() => {
