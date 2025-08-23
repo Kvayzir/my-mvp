@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <main className="flex flex-col md:flex-row h-4/5">
         <ChatContainer title={"" + topic} onSetChatState={setChatState} level={level} />
-        <Notebook onSetLevel={setLevel} state={chatState} />
+        <Notebook updateLevel={setLevel} state={chatState} />
     </main>
   );
 }

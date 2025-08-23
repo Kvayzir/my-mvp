@@ -15,12 +15,12 @@ import { MapLegend } from "./map-legend";
 
 export default function JourneyMap(props: JourneyMapProps) {
   const setAllIconPositions = props.updateAllIconPositions ? props.updateAllIconPositions : () => {};
-
+  const data = props.data ? props.data : JOURNEY_DATA;
   // Calculate and store all icon positions once on mount
   useEffect(() => {
     const positions: PositionedJourneyIcon[] = [];
     
-    JOURNEY_DATA.forEach((ringData) => {
+    data.forEach((ringData) => {
       ringData.items.forEach((item, index) => {
         const ringConfig = RING_CONFIG[ringData.ring as keyof typeof RING_CONFIG];
         const relativePos = getCircularPosition(index, ringData.items.length, ringConfig.radius);
@@ -28,7 +28,7 @@ export default function JourneyMap(props: JourneyMapProps) {
         
         positions.push({
           ...item,
-          onClick: () => props.onSetLevel ? props.onSetLevel(item.level) : console.log("onSetLevel not provided"),
+          onClick: () => props.updateLevel ? props.updateLevel(item.level) : console.log("updateLevel not provided"),
           position: absolutePos,
           id: `${ringData.ring}-${index}`,
           ring: ringData.ring,
@@ -38,7 +38,7 @@ export default function JourneyMap(props: JourneyMapProps) {
     });
     
     setAllIconPositions(positions);
-  }, [props.onSetLevel]);
+  }, [props.updateLevel]);
 
   const isRingVisible = useCallback((ring: number) => {
     switch (props.state) {
@@ -72,7 +72,7 @@ export default function JourneyMap(props: JourneyMapProps) {
         ))}
 
         {/* Journey Icons */}
-        {JOURNEY_DATA.map((ringData) => (
+        {data.map((ringData) => (
           <div key={ringData.ring}>
             {ringData.items.map((item, index) => {
               const ringConfig = RING_CONFIG[ringData.ring as keyof typeof RING_CONFIG];
@@ -102,7 +102,7 @@ export default function JourneyMap(props: JourneyMapProps) {
 
               const positionedIcon: PositionedJourneyIcon = {
                 ...item,
-                onClick: () => props.onSetLevel ? props.onSetLevel(item.level) : console.log("onSetLevel not provided"),
+                onClick: () => props.updateLevel ? props.updateLevel(item.level) : console.log("updateLevel not provided"),
                 position: absolutePos,
                 id: `${ringData.ring}-${index}`,
                 ring: ringData.ring,

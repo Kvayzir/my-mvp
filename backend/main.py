@@ -104,30 +104,16 @@ async def get_topics(user_id: Optional[str] = None, app_service: AppService = De
     return app_service.topic_service.get_topics(user_id)
 
 # Example of a topic content
-sample = {
-    'name': 'celula',
-    'icon': '🧿',
-    'description': 'This is a sample topic description for "celula".', 
-    'contents': [
-        {'level': 2, 'color': 'purple', 'title': 'core', 'icon': '🧿', 'description': 'Cuando se mira una imagen de la célula, el núcleo es una de las partes más evidentes. Está en el centro de la célula, y contiene todos los cromosomas de la misma, los cuales codifican el material genético. Es, por lo tanto, una parte a proteger, es realmente importante para la célula. El núcleo tiene una membrana que lo rodea y que mantiene todos los cromosomas en el interior; y separa los cromosomas del interior del núcleo y el resto de los orgánulos y componentes de la célula que se quedan fuera. Algunas cosas, como el ARN, necesitan circular entre el núcleo y el citoplasma. Para ello, hay poros en esta envoltura nuclear que permiten que las moléculas entren y salgan del núcleo. Antes se pensaba que la membrana nuclear sólo permitía la salida de las moléculas, pero ahora se sabe que también hay un proceso activo para introducir moléculas en el núcleo'},
-        {'level': 2, 'color': 'teal', 'title': 'Ciudad', 'icon': '🏙️', 'description': 'Imagina una ciudad en miniatura: hay una planta eléctrica (mitocondria), una oficina de correos (aparato de Golgi), fábricas (ribosomas), centros de reciclaje (lisosomas), calles (citoplasma) y, por supuesto, un ayuntamiento con los planos de construcción: el núcleo.'},
-        {'level': 2, 'color': 'indigo', 'title': 'microscopio', 'icon': '🛩️', 'description': 'Hoy haremos un viaje microscópico dentro de una célula. Prepárate para flotar por el citoplasma, explorar estructuras llenas de energía y llegar al lugar más protegido de todos: el núcleo, donde se guardan los secretos de la vida.'},
-        {'level': 1, 'color': 'yellow', 'title': 'energy', 'icon': '🔋', 'description': 'Aquí hablamos de mitocondrias, cloroplastos, lisosomas, y vacuolas'},
-        {'level': 1, 'color': 'red', 'title': 'sustances', 'icon': '⚙️', 'description': 'Ribosomas, RER, REL, aparato de Golgi'},
-        {'level': 1, 'color': 'green', 'title': 'citoesqueleto', 'icon': '🩻', 'description': 'Citoesqueleto: microfilamentos, filamentos intermedios y microtúbulos. Estos son los componentes que dan forma a la célula, como si fueran los huesos y músculos de un cuerpo.'},
-        {'level': 1, 'color': 'indigo', 'title': 'nucleo', 'icon': '🧬', 'description': 'Forma, adn, genes, partes...'},
-        {'level': 0, 'color': 'purple', 'title': 'goal', 'icon': '🎯', 'description': 'Aquí evaluamos al alumno.'}
-    ]
-}
+from scripts.clients.mockup_database import TopicInformation, CELLS_TOPIC
 
-@router_topics.get("/{topic_name}", response_model=TopicContent)
+@router_topics.get("/{topic_name}", response_model=TopicInformation)
 async def get_topic_details(topic_name: str, app_service: AppService = Depends(get_chat_server)):
     """Retrieves contents of a specific topic."""
     try:
         # app_service.get_topic_contents(topic_name) is a placeholder for actual logic
         if topic_name != "celula":
             raise HTTPException(status_code=404, detail="Topic not found")
-        return sample
+        return CELLS_TOPIC
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving topic: {str(e)}")
 

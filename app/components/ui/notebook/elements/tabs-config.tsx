@@ -16,7 +16,7 @@ export const createTabsConfig = (props: TabsConfigEntry) => {
     label: "Journey",
     icon: "🗺️",
     content: <JourneyMap 
-      onSetLevel={props.mapProps.onSetLevel} 
+      updateLevel={props.mapProps.updateLevel} 
       state={props.mapProps.state} 
       clickedSequence={props.mapProps.clickedSequence} 
       updateAllIconPositions={props.mapProps.updateAllIconPositions} 

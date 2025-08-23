@@ -51,7 +51,7 @@ export default function EditorWrapper() {
             <div className='w-full flex flex-col md:flex-row gap-4 h-[90%]'>
                 <div className="p-4 bg-white rounded-lg shadow-md w-1/2 min-w-[480px]">
                     {/* JourneyMap will update the 'level' state when an icon is clicked */}
-                    <JourneyMap state="end" onSetLevel={setLevel} />
+                    <JourneyMap state="end" updateLevel={setLevel} />
                 </div>
                 <div className='p-4 w-1/2 min-w-[480px] rounded-lg shadow-md'>
                     {isLoading && <div className="text-center text-gray-600">Cargando contenido...</div>}

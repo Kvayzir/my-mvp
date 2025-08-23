@@ -231,9 +231,20 @@ export interface JourneyIconEntry {
 
 export type JourneyIconType = 'history' | 'biology' | 'science' | 'mystery' | 'goal' | 'magic' | 'nature' | 'space' | 'art';
 
+export type JourneyLayer = {
+  ring: number;
+  items: (JourneyIconEntry & { level: string })[];
+};
+
+export type JourneyContent = {
+  title: string;
+  contentList: { keyword: string; content: string; img: string; isChecked: boolean }[];
+}
+
 export interface JourneyMapProps {
+  data?: JourneyLayer[];
   state: JourneyState; // Represents the current state of the notebook or journey
-  onSetLevel?: (level: string) => void;
+  updateLevel?: (level: string) => void;
   clickedSequence?: PositionedJourneyIcon[]; // Optional for tracking clicked icons
   children?: () => React.JSX.Element; // Optional for rendering children components
   handleIconClick?: (icon: PositionedJourneyIcon, ringIndex: number, itemIndex: number) => void; // Optional for updating clicked sequence

@@ -11,7 +11,8 @@ const links = [
   { name: '📚 Contenido', href: '/demo/docente/contents'},
   { name: '📝 Tareas', href: '/demo/docente/activities'},
   { name: 'Estudiante', href: '/demo/estudiante'},
-  { name: 'Institución', href: '/demo/institucion'}
+  { name: 'Institución', href: '/demo/institucion'},
+  { name: 'MVP', href: '/mvp'}
 ];
 
 export default function NavLinks() {
