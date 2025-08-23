@@ -61,7 +61,7 @@ export default function Page() {
                     <JournerMap state='end' data={mapData} updateLevel={setMapLevel}></JournerMap>
                 </div>
                 <div className='w-1/2 bg-gray-300 rounded-lg flex flex-col items-center overflow-auto'>
-                    <h2 className='text-xl font-bold p-4 w-full'>Nivel seleccionado: {mapLevel}</h2>
+                    <h2 className='text-xl font-bold p-4 w-full text-gray-500'>Nivel seleccionado: {mapLevel}</h2>
                     <button type='button' className='p-2 w-1/5 border rounded-lg hover:bg-blue-400 cursor-pointer' onClick={() => setIsReadOnly(!isReadOnly)}>Editar</button>
                     <h3 className='text-lg font-semibold p-4 w-full'>Contenido:</h3>
                     <div className='p-4 mt-[-20px] flex flex-col space-y-1 w-full'>
