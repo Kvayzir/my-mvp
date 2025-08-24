@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import ChatContainer from "@/app/components/demo/assignment/chat/ChatContainer";
+import ChatContainer from "@/app/components/ui/chat/ChatContainer";
 import Notebook from "@/app/components/ui/notebook/notebook";
 import { JourneyState } from '@/app/lib/types';
 

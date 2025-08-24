@@ -36,10 +36,15 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 ## To-dos
-- Create a content preview component
+- Modify keyword-checkbox.tsx to have different views:
+    - Button view for Create that activates when keyword=''
+    - Div view for Edit
+    - Add "edit" and "delete" buttons on "readOnly" view
+- Make Chat for content-specific simulations
+
+## Ideas
 - Button for download pdf (and share)
-- Link content to chat
-- Limit send button to 20 messages
+- Hardcore mode: Limit send button to 20 messages
 - Create a 5-starts rating pop-up (if student rates 4 or 5, it receives 5 more messages)
 - GPT prompt to 
     - ask for suggestions if the students is struggling to decide the next topic
