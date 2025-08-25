@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ChatViewer from './ChatViewer';
 import ChatInput from './ChatInput';
 import { ChatMessage, ChatProps, JourneyState, ChatReplyRequest } from '@/app/lib/types';
-import { fetchChatStart, patchChatConversation } from '@/app/lib/data';
+import { fetchChatStart, patchChatConversation, fetchChatSimulate } from '@/app/lib/data';
 
 const TOPIC_CONTENT_MAP = {
     "Ciudad": "city",
@@ -68,6 +68,12 @@ export default function ChatContainer(props: ChatProps) {
                 user_id: userId || "anonymous", // Ensure userId is always defined
                 topic: topic || 'Introducción a la investigación' // Fallback for topic
             };
+            if (props.contentList) {
+                const initialMessage = await fetchChatSimulate({user_id: request.user_id, contentList: props.contentList});
+                console.log('Initial simulation message:', initialMessage);
+                addMessage(initialMessage.response, 'bot', true);
+                return;
+            }
             const initialMessages = await fetchChatStart(request);
             console.log('Initial chat messages:', initialMessages);
             if (initialMessages.messages && initialMessages.messages.length > 0) {

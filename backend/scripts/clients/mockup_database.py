@@ -32,22 +32,22 @@ CELLS_TOPIC = TopicInformation(
             ui = UIRender(icon='🧿', color='purple', description='Motivación general a conocer el núcleo de la célula'),
             checklist = [
                 MaterialInfo(
-                    keyword = 'Ubicación', 
+                    keyword = '¿Dónde está?', 
                     content = 'El núcleo es una de las partes más evidentes de la célula, dada su posición en el centro de la misma.',
                     img = '(Imagen de la célula señalando el núcleo)'
                 ),
                 MaterialInfo(
-                    keyword = 'Contenido', 
+                    keyword = '¿Qué guarda en su interior?', 
                     content = 'Contine todos los cromosomas de la célula, los cuales codifican el material genético. Debido a la importancia de los genes, el núcleo es una parte a proteger.',
                     img = ''
                 ),
                 MaterialInfo(
-                    keyword = 'Protección', 
+                    keyword = '¿Cómo se protege?', 
                     content = 'El núcleo tiene una membrana que lo rodea y que mantiene todos los cromosomas en el interior; separandolos del resto de organelos y componentes que quedan fuera.',
                     img = ''
                 ),
                 MaterialInfo(
-                    keyword = 'Intercambio de sustancias', 
+                    keyword = '¿Se comunica con el exterior?', 
                     content = 'Algunas sustancias, como el ARN, necesitan circular entre el núcleo y el citoplasma. Para ello, hay poros en esta envoltura nuclear que permiten que las moléculas entren y salgan del núcleo.',
                     img = ''
                 ),

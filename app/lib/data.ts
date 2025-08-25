@@ -1,4 +1,4 @@
-import { ChatReplyRequest } from "./types";
+import { ChatReplyRequest, ContentItem } from "./types";
 
 export async function fetchCardData() {
   try {
@@ -47,6 +47,26 @@ export async function fetchChatStart(request: {user_id: string, topic: string}) 
   } catch (error) {
     console.error('Error initializing chat:', error);
     return {reply: `Welcome to the chat about ${request.topic}!`, complete: false};
+  }
+}
+
+export async function fetchChatSimulate(request: {user_id: string, contentList: ContentItem[]}) {
+  try {
+    console.log('Simulate request:', request.contentList);
+    const response = await fetch(`http://localhost:8000/simulations/start`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request.contentList),
+    }).then(res => res.json());
+
+    console.log('Chat response:', response);
+    console.log('User:', request.user_id);
+    return response;
+  } catch (error) {
+    console.error('Error initializing chat:', error);
+    return {reply: `Welcome to the simulation chat!`, complete: false};
   }
 }
 

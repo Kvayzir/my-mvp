@@ -54,6 +54,12 @@ class TopicContent(BaseModel):
     description: str
     contents: List[ContentItem]
 
+class MaterialInfo(BaseModel):
+    keyword: str
+    content: str
+    img: str
+    isChecked: bool
+
 # Additional models you might need in the future
 class HealthStatus(BaseModel):
     status: str

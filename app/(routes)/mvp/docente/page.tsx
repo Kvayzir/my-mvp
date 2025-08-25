@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchTopicContent } from '@/app/lib/data'
 import JournerMap from '@/app/components/ui/journey-map/journey-map';
 import ChatContainer from '@/app/components/ui/chat/ChatContainer';
-import { JourneyLayer, JourneyContent } from '@/app/lib/types';
+import { JourneyLayer, JourneyContent, ContentItem } from '@/app/lib/types';
 import KeywordCheckbox from "@/app/components/ui/notebook/elements/resources/keyword-checkbox";
 // import Image from 'next/image';
 
@@ -13,6 +13,7 @@ export default function Page() {
     const [chatState, setChatState] = useState<'start' | 'in progress' | 'end' | 'complete'>('end');
     const [mapData, setMapData] = useState<JourneyLayer[]>();
     const [journeyContents, setJourneyContents] = useState<JourneyContent[]>();
+    const [currentContentList, setcurrentContentList] = useState<ContentItem[]>();
     const [isReadOnly, setIsReadOnly] = useState(true);
     const [isMapActive, setMapActive] = useState(true);
 
@@ -56,20 +57,28 @@ export default function Page() {
         }
         loadTopic();
     }, []);
+
+    useEffect(() => {
+        const selectedContent = journeyContents?.find(jc => jc.title === mapLevel);
+        if (selectedContent) {
+            setcurrentContentList(selectedContent.contentList);
+            console.log("Current content list updated:", selectedContent.contentList);
+        }
+    }, [mapLevel, journeyContents]);
     return (
-        <main className="h-full ">
+        <main className="h-full">
             <h1 className='text-center text-bold text-xl'>Contenido del MVP</h1>
-            <div className='flex flex-row flex-grow space-x-4 p-4 w-full max-h-full'>
-                <div className='w-1/2 bg-gray-300 rounded-lg'>
+            <div className='flex flex-row flex-grow space-x-4 p-4 w-full h-full max-h-full'>
+                <div className='w-1/2 flex-1 bg-gray-300 rounded-lg'>
                     {isMapActive && (<JournerMap state={chatState} data={mapData} updateLevel={setMapLevel}></JournerMap>)}
-                    {!isMapActive && (<ChatContainer title={`Simulador de ${mapLevel}`} level={mapLevel} onSetChatState={setChatState} />)}
+                    {!isMapActive && (<ChatContainer title={`Simulador de ${mapLevel}`} level={mapLevel} onSetChatState={setChatState} contentList={currentContentList}/>)}
                 </div>
                 <div className='w-1/2 bg-gray-300 rounded-lg flex flex-col items-center overflow-auto'>
                     <h2 className='text-xl font-bold p-4 w-full text-gray-500'>Nivel seleccionado: {mapLevel}</h2>
                     <button type='button' className='p-2 w-1/5 border rounded-lg hover:bg-blue-400 cursor-pointer' onClick={() => setIsReadOnly(!isReadOnly)}>Editar</button>
                     <h3 className='text-lg font-semibold p-4 w-full'>Contenido:</h3>
                     <div className='p-4 mt-[-20px] flex flex-col space-y-1 w-full'>
-                        {journeyContents && isReadOnly && journeyContents.filter(jc => jc.title === mapLevel)[0]?.contentList.map((c, index) => (
+                        {journeyContents && currentContentList && isReadOnly && currentContentList.map((c, index) => (
                             <KeywordCheckbox
                                 key={index}
                                 name={c.keyword}
@@ -77,7 +86,7 @@ export default function Page() {
                                 content={c.content}
                             />
                         ))}
-                        {journeyContents && isReadOnly && (<button type='button' className='p-2 mt-2 w-1/4 hover:bg-green-400 cursor-pointer border rounded-lg self-center' onClick={() => setMapActive(!isMapActive)}>{isMapActive ? 'Simular Conversación' : 'Volver al Mapa'}</button>)}
+                        {journeyContents && currentContentList && isReadOnly && (<button type='button' className='p-2 mt-2 w-1/4 hover:bg-green-400 cursor-pointer border rounded-lg self-center' onClick={() => setMapActive(!isMapActive)}>{isMapActive ? 'Simular Conversación' : 'Volver al Mapa'}</button>)}
                         {journeyContents && !isReadOnly && journeyContents.filter(jc => jc.title === mapLevel)[0]?.contentList.map((c, index) => (
                             <div key={index} className='p-2 border rounded bg-white text-gray-700 flex flex-col space-y-2'>
                                 <label htmlFor={`name-${index}`} className='font-semibold'>Nombre: 

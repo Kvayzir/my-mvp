@@ -3,7 +3,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import time
-from typing import Optional
+from typing import Optional, List
 from dotenv import load_dotenv
 
 from scripts.server import AppService
@@ -14,7 +14,8 @@ from utils.messages import (
     TopicMessage,
     ChatHistoryLoad,
     ConversationUpdate,
-    TopicContent
+    TopicContent,
+    MaterialInfo
 )
 
 # --- App Lifespan and Global Setup ---
@@ -103,7 +104,7 @@ async def get_topics(user_id: Optional[str] = None, app_service: AppService = De
     """
     return app_service.topic_service.get_topics(user_id)
 
-# Example of a topic content
+## Example of a topic content
 from scripts.clients.mockup_database import TopicInformation, CELLS_TOPIC
 
 @router_topics.get("/{topic_name}", response_model=TopicInformation)
@@ -116,6 +117,30 @@ async def get_topic_details(topic_name: str, app_service: AppService = Depends(g
         return CELLS_TOPIC
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving topic: {str(e)}")
+
+# Router for Simulations-related endpoints
+router_simulations = APIRouter(prefix="/simulations", tags=["Simulations"])
+
+@router_simulations.post("/start", response_model=ChatResponse)
+async def start_simulation(
+    content: List[MaterialInfo],
+    app_service: AppService = Depends(get_chat_server)
+):
+    """Starts a simulation and returns the initial response."""
+    try:
+        print(f"Starting simulation with content: {content}")
+        # bot_response = await app_service.simulation_service.start_simulation(content)
+        return ChatResponse(
+            response=f"Iniciando Simulación sobre {content[0].keyword}", #bot_response
+            timestamp=time.time(),
+            response_time_ms=0,
+            complete=True
+        )
+    except Exception as e:
+        print(f"CRITICAL ERROR: Unhandled exception in start_simulation: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error starting simulation: {str(e)}"
+)
 
 # Router for Conversation-related endpoints
 router_conversations = APIRouter(prefix="/conversations", tags=["Conversations"])
@@ -209,6 +234,7 @@ async def root(app_service: AppService = Depends(get_chat_server)):
 app.include_router(router_users)
 app.include_router(router_topics)
 app.include_router(router_conversations)
+app.include_router(router_simulations)
 
 if __name__ == "__main__":
     import uvicorn

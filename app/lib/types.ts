@@ -36,10 +36,19 @@ export interface ChatReplyRequest {
   msg: string;
 }
 
+export interface ContentItem {
+  keyword: string;
+  content: string;
+  isChecked: boolean;
+  img: string;
+}
+
 export interface ChatProps {
   title: string;
   level: string;
   onSetChatState: (state: JourneyState) => void;
+  // For content specific chats - if undefined -> general chat
+  contentList?: ContentItem[];
 }
 
 // ============================================================================
@@ -238,7 +247,7 @@ export type JourneyLayer = {
 
 export type JourneyContent = {
   title: string;
-  contentList: { keyword: string; content: string; img: string; isChecked: boolean }[];
+  contentList: ContentItem[];
 }
 
 export interface JourneyMapProps {
