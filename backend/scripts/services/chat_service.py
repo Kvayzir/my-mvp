@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from ..core.managers.chatManager import ChatMemoryManager
 from ..clients.chatbot import ChatBot
-from utils.messages import ChatMessage, SimpleChatMessage
+from utils.messages import ChatMessage, SimpleChatMessage, MaterialInfo
 
 CHAT_OPERATION = {
     "INIT": "SYSTEM_INIT",
@@ -27,6 +27,7 @@ class ChatService:
         """
         self.memory_manager = memory_manager
         self.chatbot = chatbot
+        self.simulation_content = []
         self.last_message: str = ""
         self.last_reply: str = ""
 
@@ -63,6 +64,27 @@ class ChatService:
             return conversation.get_message_history_for_storage()
         except Exception as e:
             print(f"❌ Failed to get or create conversation for user '{user_id}': {e}")
+            raise
+
+    async def start_simulation(self, title: str) -> str:
+        """
+        Initiates a simulation based on provided content and returns the initial response.
+        
+        Args:
+            title: The title of the simulation.
+            content: A list of MaterialInfo objects representing the simulation content.
+            
+        Returns:
+            The initial response string from the chatbot.
+        """
+        try:
+            print(f"Simulación '{title}' iniciada")
+            conversation = await self.memory_manager.get_conversation('simulation', title)
+            print(f'Conversation loaded: {conversation}')
+            initial_response = self.chatbot.generate_response(conversation.get_llm_chat_context())
+            return initial_response
+        except Exception as e:
+            print(f"❌ Error starting simulation '{title}': {e}")
             raise
 
     async def process_user_message(self, user_id: str, theme: str, message: ChatMessage) -> Tuple[str, int]:

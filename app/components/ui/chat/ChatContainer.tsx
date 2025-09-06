@@ -69,7 +69,7 @@ export default function ChatContainer(props: ChatProps) {
                 topic: topic || 'Introducción a la investigación' // Fallback for topic
             };
             if (props.contentList) {
-                const initialMessage = await fetchChatSimulate({user_id: request.user_id, contentList: props.contentList});
+                const initialMessage = await fetchChatSimulate({user_id: request.user_id, topic: request.topic, contentList: props.contentList});
                 console.log('Initial simulation message:', initialMessage);
                 addMessage(initialMessage.response, 'bot', true);
                 return;

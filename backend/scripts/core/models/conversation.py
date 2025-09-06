@@ -3,7 +3,7 @@ import time
 from typing import Dict, List, Optional, Union
 from datetime import datetime
 from utils.messages import SimpleChatMessage, ContentProgressStatus
-from .topic import Topic
+from .topic import Topic2LLM
 
 class Conversation:
     """
@@ -12,17 +12,19 @@ class Conversation:
     def __init__(
         self, 
         user_id: str, 
-        topic: Topic,
+        topic: Topic2LLM,
         initial_messages: Optional[List[SimpleChatMessage]] = None,
         initial_level_content: Optional[str] = None,
         initial_progress_status: Optional[ContentProgressStatus] = None,
-        initial_conversation_state: str = 'start' # e.g., 'start', 'in progress', 'end'
+        initial_conversation_state: str = 'start', # e.g., 'start', 'in progress', 'end'
+        isSimulation: bool = False
     ):
         self._cache_dirty = True
         self._cache: Dict[str, any] = {} # Cache for LLM contexts
         
         self.user_id = user_id
         self.topic = topic
+        self.isSimulation = isSimulation
         
         # Dialogue history - stores SimpleChatMessage Pydantic instances
         self.messages: List[SimpleChatMessage] = initial_messages or []

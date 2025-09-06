@@ -105,7 +105,7 @@ async def get_topics(user_id: Optional[str] = None, app_service: AppService = De
     return app_service.topic_service.get_topics(user_id)
 
 ## Example of a topic content
-from scripts.clients.mockup_database import TopicInformation, CELLS_TOPIC
+from scripts.clients.mockup_database import TopicInformation, CELLS_TOPIC, LEGALITY_TOPIC
 
 @router_topics.get("/{topic_name}", response_model=TopicInformation)
 async def get_topic_details(topic_name: str, app_service: AppService = Depends(get_chat_server)):
@@ -114,24 +114,25 @@ async def get_topic_details(topic_name: str, app_service: AppService = Depends(g
         # app_service.get_topic_contents(topic_name) is a placeholder for actual logic
         if topic_name != "celula":
             raise HTTPException(status_code=404, detail="Topic not found")
-        return CELLS_TOPIC
+        return LEGALITY_TOPIC
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving topic: {str(e)}")
 
 # Router for Simulations-related endpoints
 router_simulations = APIRouter(prefix="/simulations", tags=["Simulations"])
 
-@router_simulations.post("/start", response_model=ChatResponse)
+@router_simulations.post("/start/{title}", response_model=ChatResponse)
 async def start_simulation(
+    title: str,
     content: List[MaterialInfo],
     app_service: AppService = Depends(get_chat_server)
 ):
     """Starts a simulation and returns the initial response."""
     try:
         print(f"Starting simulation with content: {content}")
-        # bot_response = await app_service.simulation_service.start_simulation(content)
+        bot_response = await app_service.chat_service.start_simulation("Definición")
         return ChatResponse(
-            response=f"Iniciando Simulación sobre {content[0].keyword}", #bot_response
+            response=bot_response, #f"Iniciando Simulación sobre {content[0].keyword}"
             timestamp=time.time(),
             response_time_ms=0,
             complete=True

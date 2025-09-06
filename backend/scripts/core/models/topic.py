@@ -1,15 +1,14 @@
 from typing import Dict, Optional, List
+from scripts.clients.mockup_database import TopicInformation, MaterialInfo
 
-class Topic:
+class Topic2LLM:
     """
     Represents a single assignment topic, containing all the necessary
     prompts and content for guiding a student.
     """
     def __init__(
         self,
-        name: str,
-        theme: str,
-        sub_content: Dict[str, str],
+        topicInfo: TopicInformation,
         objectives: Optional[List[str]] = None
     ):
         """
@@ -22,35 +21,33 @@ class Topic:
                          and values are the specific content for that section.
             objectives: (Optional) A list of learning objectives for this topic.
         """
-        self.name = name
-        self.theme = theme
-        self.sub_content = sub_content
+        self.topicInfo = topicInfo
         self.objectives = objectives or []
 
     def __repr__(self):
         return (
-            f"Topic(name='{self.name}', "
-            f"sub_content_keys={list(self.sub_content.keys())})"
+            f"Topic(name='{self.topicInfo.name}', "
+            f"sub_content_keys={[c.title for c in self.topicInfo.contents]})"
         )
 
     def get_general_prompt(self, sub_content_key) -> str:
         """
         Returns the general system prompt for this topic.
         """
-        general_prompt = (
-            "Eres un guía de aprendizaje para estudiantes de secundaria, especializado en motivarlos a explorar el material educativo. "
-            "Tu objetivo es hacer que el aprendizaje sea un 'viaje' interesante y personalizado.\n\n"
-            "Tu trabajo se centra en el material que el docente ha preparado. Siempre que interactúes con un estudiante, debes seguir estas reglas clave:\n"
-            "1. **Mantente dentro del material**: Solo puedes usar la información proporcionada por el docente, indicada por la variable de contexto section_content. Nunca inventes o añadas datos externos. Si el estudiante pregunta algo fuera del material, responde amablemente que esa información no está disponible en la sección actual y anímalo a continuar con el 'viaje de aprendizaje'.\n"
-            "2. **Actúa como un guía, no un expositor**: Tu rol no es dar la respuesta completa, sino dar pistas, hacer preguntas y motivar la curiosidad. La idea es que el estudiante anticipe y explore el siguiente dato por sí mismo.\n"
-            "3. **Adopta un tono juvenil y amigable**: Utiliza un lenguaje cercano y relevante para estudiantes de secundaria. Usa analogías o metáforas para que el material sea más fácil de entender y divertido.\n"
-            "4. **Respuestas concisas**: Mantén tus respuestas breves, idealmente entre **2 y 4 oraciones**. Solo comparte un dato a la vez.\n"
-            "5. **Ciclo de interacción**: La interacción debe seguir un ciclo simple: Pista -> Pregunta -> Adaptación.\n"
-            "6. **Gestión de la sección**: Introduce el tema de la sección usando la metáfora elegida. Limítate estrictamente a los contenidos de la sección actual, sin profundizar. Cuando el material de la sección se acabe, instruye al estudiante para que use el mapa de la aplicación para seleccionar un nuevo tema.\n\n"
-            "**Variable de Contexto**:\n\n"
-            f"**{{theme}}**: {self.theme}\n"
-            f"**{{section}}**: {sub_content_key}\n"
-            f"**{{section_content}}**: {self.sub_content.get(sub_content_key)}\n\n"
+        sub_content = self.get_sub_content(sub_content_key)
+        if not sub_content:
+            raise ValueError(f"Sub-content key '{sub_content_key}' not found in topic '{self.topicInfo.name}'.")
+        
+        try:
+            with open('scripts/core/models/general_prompt.md', 'r', encoding='utf-8') as f:
+                plantilla_prompt = f.read()
+        except FileNotFoundError:
+            print("Error: El archivo 'general_prompt.md' no fue encontrado.")
+            exit()
+        general_prompt = plantilla_prompt.format(
+            theme=self.topicInfo.name,
+            section=sub_content_key,
+            section_content=sub_content
         )
         return general_prompt
 
@@ -65,16 +62,13 @@ class Topic:
         Returns:
             The content string if the key exists, otherwise None.
         """
-        return self.sub_content.get(sub_content_key)
+        content = list(filter(lambda c: c.title == sub_content_key, self.topicInfo.contents))
+        if not content:
+            print(f"⚠️ Warning: Sub-content key '{sub_content_key}' not found in topic '{self.topicInfo.name}'.")
+            return None
+        contentList = [f'{p.keyword}: {p.content}' for p in content[0].checklist]
+        acc = ''
+        for index, c in enumerate(contentList):
+            acc += f'{index}. ' + c + '\n'
+        return acc
 
-    def get_formatted_general_prompt(self) -> str:
-        """
-        Returns the general system prompt, potentially formatted with objectives.
-        """
-        if self.objectives:
-            objectives_str = "\n".join(f"- {obj}" for obj in self.objectives)
-            return (
-                f"{self.general_prompt}\n\n"
-                f"The key learning objectives for this topic are:\n{objectives_str}"
-            )
-        return self.general_prompt

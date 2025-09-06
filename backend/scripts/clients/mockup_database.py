@@ -259,3 +259,49 @@ CELLS_TOPIC = TopicInformation(
         ),
     ]
 )
+
+LEGALITY_TOPIC = TopicInformation(
+    name = 'Cultura de la Legalidad y su relación con los derechos',
+    ui = UIRender (icon='⚖️', color='blue', description='Fundamentos de la legalidad y su relación con los derechos humanos y el sistema jurídico en la sociedad contemporánea.'),
+    contents = [
+        ContentInformation(
+            level = 2,
+            title = 'Definición',
+            ui = UIRender(icon='📚', color='purple', description='Concepto de cultura de la legalidad y su importancia en la sociedad.'),
+            checklist = [
+                MaterialInfo(
+                    keyword = '¿Por qué es tan importante?',
+                    content = 'La cultura de la legalidad es un pilar fundamental en toda sociedad democrática que aspira a garantizar el respeto y la protección de los derechos fundamentales. Se relaciona con el ejercicio y la protección de los derechos humanos y civilies. No obstante, no basta con que una sociedad posea normales legales para garantizar la existencia de una cultura de la legalidad.',
+                    img = ''
+                ),
+                MaterialInfo(
+                    keyword = '¿Qué entendemos por cultura de la legalidad?',
+                    content = 'Es aquella forma de vida (conocimientos, costumbres, creencias, etc.) según la cual las personas y organizaciones valoran el cumplimiento de las normas y respetan a las instituciones que lo garantizan. No por obediencia ciega, sino porque reconocen en ellas un pilar fundamental para su existencia.',
+                    img = ''
+                ),
+                MaterialInfo(
+                    keyword = '¿Cómo se instaura una cultura de la legalidad?',
+                    content = 'A través del conocimiento de las normas y las instituciones democráticas, así como la comprensión de las razones de su importancia. Además, es necesario estar dispuestos a respetarlas. Implica, por supuesto, conocer y respetar los derechos de las personas, norma fundamental de toda sociedad democrática.',
+                    img = ''
+                ),
+            ]
+        ),
+        ContentInformation(
+            level = 1,
+            title = 'Fundamentos de la Cultura de la Legalidad',
+            ui = UIRender(icon = '🏛️', color='red', description = 'Definición y elementos'),
+            checklist = [
+                MaterialInfo(
+                    keyword = 'Objetivo y representación',
+                    content = 'La cultura de la legalidad promueve que la población crea en el Estado de Derecho, lo defienda y no tolere la ilegalidad. Representa el conjunto de creencias, valores, normas y acciones que cumplen este fin.',
+                    img = ''
+                ),
+                MaterialInfo(
+                    keyword = 'Elementos principales',
+                    content = 'Conocimiento y comprensión de normas. \nVoluntad de respeto a las leyes. \nParticipación ciudadana activa. \nRechazo a la ilegalizad y a la corrupción',
+                    img = ''
+                )
+            ]
+        ),
+    ]
+)

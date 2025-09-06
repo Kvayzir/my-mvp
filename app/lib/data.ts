@@ -50,10 +50,10 @@ export async function fetchChatStart(request: {user_id: string, topic: string}) 
   }
 }
 
-export async function fetchChatSimulate(request: {user_id: string, contentList: ContentItem[]}) {
+export async function fetchChatSimulate(request: {user_id: string, topic: string, contentList: ContentItem[]}) {
   try {
     console.log('Simulate request:', request.contentList);
-    const response = await fetch(`http://localhost:8000/simulations/start`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
+    const response = await fetch(`http://localhost:8000/simulations/start/${request.topic}`, { //   https://my-mvp-production-4b5f.up.railway.app/chat
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

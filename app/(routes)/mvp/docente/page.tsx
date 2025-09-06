@@ -71,7 +71,7 @@ export default function Page() {
             <div className='flex flex-row flex-grow space-x-4 p-4 w-full h-full max-h-full'>
                 <div className='w-1/2 flex-1 bg-gray-300 rounded-lg'>
                     {isMapActive && (<JournerMap state={chatState} data={mapData} updateLevel={setMapLevel}></JournerMap>)}
-                    {!isMapActive && (<ChatContainer title={`Simulador de ${mapLevel}`} level={mapLevel} onSetChatState={setChatState} contentList={currentContentList}/>)}
+                    {!isMapActive && (<ChatContainer title={`Simulador de ChatBot: ${mapLevel}`} level={mapLevel} onSetChatState={setChatState} contentList={currentContentList}/>)}
                 </div>
                 <div className='w-1/2 bg-gray-300 rounded-lg flex flex-col items-center overflow-auto'>
                     <h2 className='text-xl font-bold p-4 w-full text-gray-500'>Nivel seleccionado: {mapLevel}</h2>
